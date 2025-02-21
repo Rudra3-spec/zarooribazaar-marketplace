@@ -9,6 +9,8 @@ import AuthPage from "@/pages/auth-page";
 import MsmeDirectory from "@/pages/msme-directory";
 import ProductListings from "@/pages/product-listings";
 import Profile from "@/pages/profile";
+import Financing from "@/pages/financing";
+import GstServices from "@/pages/gst-services";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navigation from "./components/ui/navigation";
 
@@ -19,6 +21,8 @@ function Router() {
       <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/directory" component={MsmeDirectory} />
       <ProtectedRoute path="/products" component={ProductListings} />
+      <ProtectedRoute path="/financing" component={Financing} />
+      <ProtectedRoute path="/gst-services" component={GstServices} />
       <ProtectedRoute path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>

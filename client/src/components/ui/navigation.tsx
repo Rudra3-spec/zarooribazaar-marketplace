@@ -42,6 +42,20 @@ export default function Navigation() {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
+              <Link href="/financing">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Financing
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href="/gst-services">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  GST Services
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
               <Link href="/profile">
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Profile
@@ -50,7 +64,7 @@ export default function Navigation() {
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-        
+
         <Button 
           variant="ghost" 
           onClick={() => logoutMutation.mutate()}

@@ -1,4 +1,4 @@
-import { User, Product, Message, InsertUser, InsertProduct, InsertMessage } from "@shared/schema";
+import { User, Product, Message, InsertUser, InsertProduct, InsertMessage, LoanApplication, GstRegistration, InsertLoanApplication, InsertGstRegistration } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes } from "crypto";
@@ -28,6 +28,15 @@ export interface IStorage {
   getMessages(userId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
 
+  // Loan Application operations
+  getLoanApplications(userId: number): Promise<LoanApplication[]>;
+  getFinancialInstitutions(): Promise<User[]>;
+  createLoanApplication(application: InsertLoanApplication): Promise<LoanApplication>;
+
+  // GST Registration operations
+  getGstRegistration(userId: number): Promise<GstRegistration | undefined>;
+  createGstRegistration(registration: InsertGstRegistration): Promise<GstRegistration>;
+
   sessionStore: session.Store;
 }
 
@@ -35,24 +44,33 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private products: Map<number, Product>;
   private messages: Map<number, Message>;
+  private loanApplications: Map<number, LoanApplication>;
+  private gstRegistrations: Map<number, GstRegistration>;
   sessionStore: session.Store;
   private currentUserId: number;
   private currentProductId: number;
   private currentMessageId: number;
+  private currentLoanApplicationId: number;
+  private currentGstRegistrationId: number;
 
   constructor() {
     this.users = new Map();
     this.products = new Map();
     this.messages = new Map();
+    this.loanApplications = new Map();
+    this.gstRegistrations = new Map();
     this.currentUserId = 1;
     this.currentProductId = 1;
     this.currentMessageId = 1;
+    this.currentLoanApplicationId = 1;
+    this.currentGstRegistrationId = 1;
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
 
-    // Create default admin account with pre-hashed password
+    // Create default admin account and financial institution
     this.initializeAdmin();
+    this.initializeFinancialInstitution();
   }
 
   private async initializeAdmin() {
@@ -64,8 +82,33 @@ export class MemStorage implements IStorage {
       type: "Platform Administrator",
       description: "Main administrator of ZarooriBazaar platform",
       isAdmin: true,
+      isFinancialInstitution: false,
+      creditScore: null,
+      gstNumber: null,
+      gstStatus: null,
       contactInfo: {
         email: "admin@zooribazaar.com"
+      }
+    });
+  }
+
+  private async initializeFinancialInstitution() {
+    const hashedPassword = await hashInitialPassword("bank123");
+    this.createUser({
+      username: "bank",
+      password: hashedPassword,
+      businessName: "MSME Finance Bank",
+      type: "Financial Institution",
+      description: "Leading provider of MSME loans and financial services",
+      isAdmin: false,
+      isFinancialInstitution: true,
+      creditScore: null,
+      gstNumber: null,
+      gstStatus: null,
+      contactInfo: {
+        email: "loans@msmefinance.com",
+        phone: "1800-MSME-LOAN",
+        address: "Financial District, Mumbai"
       }
     });
   }
@@ -82,12 +125,16 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user = { 
-      ...insertUser, 
+    const user: User = {
+      ...insertUser,
       id,
       description: insertUser.description || null,
       contactInfo: insertUser.contactInfo || null,
-      isAdmin: insertUser.isAdmin || false
+      isAdmin: insertUser.isAdmin || false,
+      isFinancialInstitution: insertUser.isFinancialInstitution || false,
+      creditScore: insertUser.creditScore || null,
+      gstNumber: insertUser.gstNumber || null,
+      gstStatus: insertUser.gstStatus || null
     };
     this.users.set(id, user);
     return user;
@@ -126,6 +173,38 @@ export class MemStorage implements IStorage {
     const message = { ...insertMessage, id };
     this.messages.set(id, message);
     return message;
+  }
+
+  async getLoanApplications(userId: number): Promise<LoanApplication[]> {
+    return Array.from(this.loanApplications.values()).filter(
+      (app) => app.userId === userId
+    );
+  }
+
+  async getFinancialInstitutions(): Promise<User[]> {
+    return Array.from(this.users.values()).filter(
+      (user) => user.isFinancialInstitution
+    );
+  }
+
+  async createLoanApplication(insertApplication: InsertLoanApplication): Promise<LoanApplication> {
+    const id = this.currentLoanApplicationId++;
+    const application = { ...insertApplication, id };
+    this.loanApplications.set(id, application);
+    return application;
+  }
+
+  async getGstRegistration(userId: number): Promise<GstRegistration | undefined> {
+    return Array.from(this.gstRegistrations.values()).find(
+      (reg) => reg.userId === userId
+    );
+  }
+
+  async createGstRegistration(insertRegistration: InsertGstRegistration): Promise<GstRegistration> {
+    const id = this.currentGstRegistrationId++;
+    const registration = { ...insertRegistration, id };
+    this.gstRegistrations.set(id, registration);
+    return registration;
   }
 }
 

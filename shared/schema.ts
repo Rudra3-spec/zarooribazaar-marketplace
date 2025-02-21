@@ -10,6 +10,10 @@ export const users = pgTable("users", {
   type: text("type").notNull(), // MSME type
   description: text("description"),
   isAdmin: boolean("is_admin").notNull().default(false),
+  isFinancialInstitution: boolean("is_financial_institution").notNull().default(false),
+  creditScore: integer("credit_score"),
+  gstNumber: text("gst_number"),
+  gstStatus: text("gst_status"), // 'pending', 'registered', 'not_registered'
   contactInfo: jsonb("contact_info").$type<{
     email: string;
     phone?: string;
@@ -35,14 +39,51 @@ export const messages = pgTable("messages", {
   timestamp: text("timestamp").notNull(),
 });
 
+export const loanApplications = pgTable("loan_applications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  amount: integer("amount").notNull(),
+  purpose: text("purpose").notNull(),
+  status: text("status").notNull().default("pending"), // 'pending', 'approved', 'rejected'
+  financialInstitutionId: integer("financial_institution_id"),
+  documents: jsonb("documents").$type<{
+    businessPlan?: string;
+    financialStatements?: string;
+    taxReturns?: string;
+  }>(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const gstRegistrations = pgTable("gst_registrations", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  businessType: text("business_type").notNull(),
+  annualTurnover: integer("annual_turnover").notNull(),
+  status: text("status").notNull().default("pending"), // 'pending', 'in_progress', 'completed'
+  documents: jsonb("documents").$type<{
+    panCard?: string;
+    addressProof?: string;
+    businessRegistration?: string;
+  }>(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users);
 export const insertProductSchema = createInsertSchema(products);
 export const insertMessageSchema = createInsertSchema(messages);
+export const insertLoanApplicationSchema = createInsertSchema(loanApplications);
+export const insertGstRegistrationSchema = createInsertSchema(gstRegistrations);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type InsertLoanApplication = z.infer<typeof insertLoanApplicationSchema>;
+export type InsertGstRegistration = z.infer<typeof insertGstRegistrationSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Product = typeof products.$inferSelect;
 export type Message = typeof messages.$inferSelect;
+export type LoanApplication = typeof loanApplications.$inferSelect;
+export type GstRegistration = typeof gstRegistrations.$inferSelect;

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { insertProductSchema, insertMessageSchema } from "@shared/schema";
+import { insertProductSchema, insertMessageSchema, insertLoanApplicationSchema, insertGstRegistrationSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
@@ -55,6 +55,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.user?.isAdmin) return res.sendStatus(403);
     const messages = Array.from((storage as any).messages.values());
     res.json(messages);
+  });
+
+  // Loan Applications
+  app.get("/api/loan-applications/:userId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const applications = await storage.getLoanApplications(parseInt(req.params.userId));
+    res.json(applications);
+  });
+
+  app.get("/api/financial-institutions", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const institutions = await storage.getFinancialInstitutions();
+    res.json(institutions);
+  });
+
+  app.post("/api/loan-applications", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertLoanApplicationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const application = await storage.createLoanApplication({
+      ...parsed.data,
+      userId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(application);
+  });
+
+  // GST Registration
+  app.get("/api/gst-registration/:userId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const registration = await storage.getGstRegistration(parseInt(req.params.userId));
+    res.json(registration);
+  });
+
+  app.post("/api/gst-registration", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertGstRegistrationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const registration = await storage.createGstRegistration({
+      ...parsed.data,
+      userId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(registration);
   });
 
   const httpServer = createServer(app);
