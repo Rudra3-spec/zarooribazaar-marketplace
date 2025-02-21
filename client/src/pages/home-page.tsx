@@ -119,7 +119,7 @@ export default function HomePage() {
       </div>
       {user && (
         <ChatPage 
-          autoOpen={true} 
+          autoOpen={false} 
           welcomeMessage="👋 Need help exploring ZarooriBazaar? I'm here to assist you! Ask me anything about our services." 
         />
       )}

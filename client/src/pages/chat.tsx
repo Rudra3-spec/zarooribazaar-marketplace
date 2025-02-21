@@ -24,7 +24,8 @@ export default function ChatPage({ autoOpen = false, welcomeMessage }: ChatPageP
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(autoOpen);
-  const [showWelcome, setShowWelcome] = useState(!!welcomeMessage);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcomeBubble, setShowWelcomeBubble] = useState(!isOpen);
 
   const { data: messages } = useQuery<Message[]>({
     queryKey: ["/api/messages", user?.id],
@@ -138,10 +139,27 @@ export default function ChatPage({ autoOpen = false, welcomeMessage }: ChatPageP
     <>
       <Button 
         className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 p-0 shadow-lg hover:shadow-xl transition-shadow bg-primary hover:bg-primary/90"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setShowWelcomeBubble(false);
+        }}
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
       </Button>
+
+      {showWelcomeBubble && (
+        <div className="fixed bottom-24 right-6 z-50 max-w-xs animate-in fade-in slide-in-from-bottom-5">
+          <div className="bg-primary text-primary-foreground p-4 rounded-lg shadow-lg relative">
+            <p className="pr-6">👋 Need help? I'm here!</p>
+            <button 
+              onClick={() => setShowWelcomeBubble(false)}
+              className="absolute top-2 right-2 hover:opacity-70 transition-opacity"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-96 shadow-2xl rounded-xl overflow-hidden animate-in fade-in slide-in-from-bottom-5">

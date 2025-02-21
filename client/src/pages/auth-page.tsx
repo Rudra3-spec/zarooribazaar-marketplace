@@ -14,10 +14,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Redirect } from "wouter";
+import { motion } from "framer-motion";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
-  
+
   const loginForm = useForm({
     defaultValues: {
       username: "",
@@ -46,28 +47,40 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="container flex h-screen">
-      <div className="flex flex-1 items-center justify-center">
-        <div className="w-[400px]">
-          <h1 className="mb-8 text-3xl font-bold">ZarooriBazaar</h1>
-          
-          <Tabs defaultValue="login">
-            <TabsList className="w-full mb-6">
-              <TabsTrigger value="login" className="flex-1">Login</TabsTrigger>
-              <TabsTrigger value="register" className="flex-1">Register</TabsTrigger>
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex">
+      <div className="flex-1 flex items-center justify-center p-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md"
+        >
+          <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary/60">
+            Welcome to ZarooriBazaar
+          </h1>
+          <p className="text-gray-400 mb-8">
+            Your gateway to business growth and networking
+          </p>
+
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="w-full mb-6 bg-gray-800/50 border border-gray-700">
+              <TabsTrigger value="login" className="flex-1 data-[state=active]:bg-primary">Login</TabsTrigger>
+              <TabsTrigger value="register" className="flex-1 data-[state=active]:bg-primary">Register</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
               <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit((data) => loginMutation.mutate(data))}>
+                <form onSubmit={loginForm.handleSubmit((data) => loginMutation.mutate(data))} className="space-y-4">
                   <FormField
                     control={loginForm.control}
                     name="username"
                     render={({ field }) => (
-                      <FormItem className="mb-4">
-                        <FormLabel>Username</FormLabel>
+                      <FormItem>
+                        <FormLabel className="text-gray-200">Username</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input 
+                            {...field} 
+                            className="bg-gray-800/50 border-gray-700 focus:border-primary" 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -77,10 +90,14 @@ export default function AuthPage() {
                     control={loginForm.control}
                     name="password"
                     render={({ field }) => (
-                      <FormItem className="mb-6">
-                        <FormLabel>Password</FormLabel>
+                      <FormItem>
+                        <FormLabel className="text-gray-200">Password</FormLabel>
                         <FormControl>
-                          <Input type="password" {...field} />
+                          <Input 
+                            type="password" 
+                            {...field} 
+                            className="bg-gray-800/50 border-gray-700 focus:border-primary"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -88,10 +105,10 @@ export default function AuthPage() {
                   />
                   <Button 
                     type="submit" 
-                    className="w-full"
+                    className="w-full bg-primary hover:bg-primary/90"
                     disabled={loginMutation.isPending}
                   >
-                    Login
+                    {loginMutation.isPending ? "Logging in..." : "Login"}
                   </Button>
                 </form>
               </Form>
@@ -99,15 +116,18 @@ export default function AuthPage() {
 
             <TabsContent value="register">
               <Form {...registerForm}>
-                <form onSubmit={registerForm.handleSubmit((data) => registerMutation.mutate(data as InsertUser))}>
+                <form onSubmit={registerForm.handleSubmit((data) => registerMutation.mutate(data as InsertUser))} className="space-y-4">
                   <FormField
                     control={registerForm.control}
                     name="username"
                     render={({ field }) => (
-                      <FormItem className="mb-4">
-                        <FormLabel>Username</FormLabel>
+                      <FormItem>
+                        <FormLabel className="text-gray-200">Username</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input 
+                            {...field} 
+                            className="bg-gray-800/50 border-gray-700 focus:border-primary"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -117,10 +137,14 @@ export default function AuthPage() {
                     control={registerForm.control}
                     name="password"
                     render={({ field }) => (
-                      <FormItem className="mb-4">
-                        <FormLabel>Password</FormLabel>
+                      <FormItem>
+                        <FormLabel className="text-gray-200">Password</FormLabel>
                         <FormControl>
-                          <Input type="password" {...field} />
+                          <Input 
+                            type="password" 
+                            {...field}
+                            className="bg-gray-800/50 border-gray-700 focus:border-primary"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -130,10 +154,13 @@ export default function AuthPage() {
                     control={registerForm.control}
                     name="businessName"
                     render={({ field }) => (
-                      <FormItem className="mb-4">
-                        <FormLabel>Business Name</FormLabel>
+                      <FormItem>
+                        <FormLabel className="text-gray-200">Business Name</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input 
+                            {...field}
+                            className="bg-gray-800/50 border-gray-700 focus:border-primary"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -143,23 +170,14 @@ export default function AuthPage() {
                     control={registerForm.control}
                     name="type"
                     render={({ field }) => (
-                      <FormItem className="mb-4">
-                        <FormLabel>MSME Type</FormLabel>
+                      <FormItem>
+                        <FormLabel className="text-gray-200">Business Type</FormLabel>
                         <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={registerForm.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem className="mb-4">
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
+                          <Input 
+                            {...field}
+                            placeholder="e.g., Manufacturer, Wholesaler, Retailer"
+                            className="bg-gray-800/50 border-gray-700 focus:border-primary"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -169,10 +187,14 @@ export default function AuthPage() {
                     control={registerForm.control}
                     name="contactInfo.email"
                     render={({ field }) => (
-                      <FormItem className="mb-4">
-                        <FormLabel>Email</FormLabel>
+                      <FormItem>
+                        <FormLabel className="text-gray-200">Email</FormLabel>
                         <FormControl>
-                          <Input type="email" {...field} />
+                          <Input 
+                            type="email" 
+                            {...field}
+                            className="bg-gray-800/50 border-gray-700 focus:border-primary"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -180,32 +202,43 @@ export default function AuthPage() {
                   />
                   <Button 
                     type="submit" 
-                    className="w-full"
+                    className="w-full bg-primary hover:bg-primary/90"
                     disabled={registerMutation.isPending}
                   >
-                    Register
+                    {registerMutation.isPending ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>
               </Form>
             </TabsContent>
           </Tabs>
-        </div>
+        </motion.div>
       </div>
 
-      <div 
-        className="hidden lg:flex flex-1 items-center justify-center bg-muted"
-        style={{
-          backgroundImage: `url(${encodeURI("https://images.unsplash.com/photo-1454165804606-c3d57bc86b40")})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="p-8 bg-background/80 backdrop-blur-sm rounded-lg max-w-md">
-          <h2 className="text-2xl font-bold mb-4">Welcome to ZarooriBazaar</h2>
-          <p className="text-muted-foreground">
-            Connect with other MSMEs, showcase your products, and grow your business network.
-            Join our platform to access a wide range of business opportunities and resources.
-          </p>
+      <div className="hidden lg:block flex-1 relative overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')",
+          }}
+        >
+          <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm" />
+        </div>
+        <div className="relative h-full flex items-center justify-center p-12">
+          <div className="text-center max-w-xl">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h2 className="text-3xl font-bold text-white mb-6">
+                Connect, Grow, and Succeed with ZarooriBazaar
+              </h2>
+              <p className="text-gray-200 text-lg leading-relaxed">
+                Join thousands of MSMEs in India's fastest-growing B2B marketplace. 
+                Access business opportunities, connect with potential partners, and scale your operations.
+              </p>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>
