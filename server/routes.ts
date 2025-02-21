@@ -44,6 +44,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(message);
   });
 
+  // Admin routes
+  app.get("/api/users", async (req, res) => {
+    if (!req.user?.isAdmin) return res.sendStatus(403);
+    const users = Array.from((storage as any).users.values());
+    res.json(users);
+  });
+
+  app.get("/api/messages/all", async (req, res) => {
+    if (!req.user?.isAdmin) return res.sendStatus(403);
+    const messages = Array.from((storage as any).messages.values());
+    res.json(messages);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

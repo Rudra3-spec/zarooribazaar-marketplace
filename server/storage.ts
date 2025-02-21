@@ -41,6 +41,19 @@ export class MemStorage implements IStorage {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
+
+    // Create default admin account
+    this.createUser({
+      username: "admin",
+      password: "admin123", // This will be hashed by auth.ts
+      businessName: "ZarooriBazaar Admin",
+      type: "Platform Administrator",
+      description: "Main administrator of ZarooriBazaar platform",
+      isAdmin: true,
+      contactInfo: {
+        email: "admin@zooribazaar.com"
+      }
+    });
   }
 
   async getUser(id: number): Promise<User | undefined> {

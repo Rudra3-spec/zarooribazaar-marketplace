@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, jsonb, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   businessName: text("business_name").notNull(),
   type: text("type").notNull(), // MSME type
   description: text("description"),
+  isAdmin: boolean("is_admin").notNull().default(false),
   contactInfo: jsonb("contact_info").$type<{
     email: string;
     phone?: string;
