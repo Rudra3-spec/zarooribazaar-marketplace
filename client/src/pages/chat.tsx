@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -121,14 +120,14 @@ export default function ChatPage() {
   return (
     <>
       <Button 
-        className="fixed bottom-4 right-4 z-50 rounded-full w-12 h-12 p-0"
+        className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 p-0 shadow-lg hover:shadow-xl transition-shadow"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X /> : <MessageSquare />}
+        {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
       </Button>
 
       {isOpen && (
-        <div className="fixed bottom-20 right-4 z-50 w-96 shadow-2xl">
+        <div className="fixed bottom-24 right-6 z-50 w-96 shadow-2xl rounded-xl overflow-hidden animate-in fade-in slide-in-from-bottom-5">
           <Card>
             <CardHeader>
               <CardTitle>
@@ -146,7 +145,7 @@ export default function ChatPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                
+
                 <ScrollArea className="flex-grow mb-4">
                   <div className="space-y-2 mb-4">
                     <Button
@@ -175,7 +174,7 @@ export default function ChatPage() {
                       </Button>
                     ))}
                   </div>
-                  
+
                   <div className="space-y-4">
                     {showAiChat ? (
                       aiMessages.map((msg) => (
