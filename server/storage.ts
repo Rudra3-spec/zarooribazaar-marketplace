@@ -449,3 +449,34 @@ export class MemStorage implements IStorage {
 }
 
 export const storage = new MemStorage();
+export async function findMatchingBusinesses(userId: number, businessType: string) {
+  const businesses = Array.from(users.values()).filter(user => 
+    user.id !== userId && 
+    user.type === businessType
+  );
+  return businesses;
+}
+
+export async function getRecommendedPartners(userId: number) {
+  const user = users.get(userId);
+  if (!user) return [];
+  
+  // Match based on complementary business types
+  const partners = Array.from(users.values()).filter(partner => 
+    partner.id !== userId && 
+    isComplementaryBusiness(user.type, partner.type)
+  );
+  
+  return partners;
+}
+
+function isComplementaryBusiness(type1: string, type2: string) {
+  const complementaryPairs = {
+    'manufacturer': ['wholesaler', 'retailer'],
+    'wholesaler': ['manufacturer', 'retailer'],
+    'retailer': ['manufacturer', 'wholesaler'],
+    'supplier': ['distributor'],
+    'distributor': ['supplier']
+  };
+  return complementaryPairs[type1]?.includes(type2) || complementaryPairs[type2]?.includes(type1);
+}
