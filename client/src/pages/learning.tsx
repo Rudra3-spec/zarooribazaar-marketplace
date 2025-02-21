@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { LearningResource } from "@shared/schema";
 import { GraduationCap, BookOpen, Play, LineChart } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useState } from "react";
 
 export default function LearningPage() {
   const { user } = useAuth();
+  const [activeDialog, setActiveDialog] = useState<'growth' | 'schemes' | 'skills' | null>(null);
 
   const { data: resources } = useQuery<LearningResource[]>({
     queryKey: ["/api/learning-resources"],
@@ -41,7 +44,34 @@ export default function LearningPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Learn strategies for scaling your business
               </p>
-              <Button className="w-full">Explore</Button>
+              <Dialog open={activeDialog === 'growth'} onOpenChange={() => setActiveDialog(null)}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" onClick={() => setActiveDialog('growth')}>Explore</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                    <DialogTitle>Business Growth Resources</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6 mt-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="font-medium mb-2">Market Analysis Guide</h3>
+                          <p className="text-sm text-muted-foreground mb-4">Learn how to analyze your market and identify growth opportunities</p>
+                          <Button className="w-full">Start Learning</Button>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="font-medium mb-2">Financial Planning</h3>
+                          <p className="text-sm text-muted-foreground mb-4">Master the basics of business financial planning</p>
+                          <Button className="w-full">Start Learning</Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
 
@@ -56,7 +86,32 @@ export default function LearningPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Stay updated with latest MSME policies
               </p>
-              <Button className="w-full">Learn More</Button>
+              <Dialog open={activeDialog === 'schemes'} onOpenChange={() => setActiveDialog(null)}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" onClick={() => setActiveDialog('schemes')}>Learn More</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                    <DialogTitle>Government Schemes & Policies</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6 mt-4">
+                    <div className="grid gap-4">
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="font-medium mb-2">MSME Development Schemes</h3>
+                          <p className="text-sm text-muted-foreground mb-4">Overview of government support programs</p>
+                          <ul className="text-sm text-muted-foreground list-disc pl-4 mb-4">
+                            <li>Credit Linked Capital Subsidy Scheme</li>
+                            <li>Prime Minister's Employment Generation Programme</li>
+                            <li>Credit Guarantee Fund Scheme</li>
+                          </ul>
+                          <Button className="w-full">View Details</Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
 
@@ -71,7 +126,34 @@ export default function LearningPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Master essential digital marketing skills
               </p>
-              <Button className="w-full">Get Started</Button>
+              <Dialog open={activeDialog === 'skills'} onOpenChange={() => setActiveDialog(null)}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" onClick={() => setActiveDialog('skills')}>Get Started</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                    <DialogTitle>Digital Skills Training</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6 mt-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="font-medium mb-2">Social Media Marketing</h3>
+                          <p className="text-sm text-muted-foreground mb-4">Learn to promote your business on social platforms</p>
+                          <Button className="w-full">Start Course</Button>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="font-medium mb-2">E-commerce Basics</h3>
+                          <p className="text-sm text-muted-foreground mb-4">Set up and manage your online store</p>
+                          <Button className="w-full">Start Course</Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>

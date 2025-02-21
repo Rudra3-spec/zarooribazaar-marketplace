@@ -11,12 +11,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { Promotion } from "@shared/schema";
 import { Megaphone, TrendingUp, BarChart } from "lucide-react";
+import { useState } from "react";
 
 export default function MarketingPage() {
   const { user } = useAuth();
+  const [activeDialog, setActiveDialog] = useState<'listing' | 'seo' | 'analytics' | null>(null);
 
   const { data: promotions } = useQuery<Promotion[]>({
     queryKey: ["/api/promotions", user?.id],
@@ -55,7 +58,35 @@ export default function MarketingPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Get premium placement in search results and category pages
               </p>
-              <Button className="w-full">Create Listing</Button>
+              <Dialog open={activeDialog === 'listing'} onOpenChange={() => setActiveDialog(null)}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" onClick={() => setActiveDialog('listing')}>Create Listing</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create Featured Listing</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <p>Choose your listing package:</p>
+                    <div className="grid gap-4">
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="font-medium mb-2">Premium Package</h3>
+                          <p className="text-sm text-muted-foreground mb-4">Top placement in search results and category pages</p>
+                          <Button className="w-full">Select Premium - ₹999/month</Button>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="font-medium mb-2">Standard Package</h3>
+                          <p className="text-sm text-muted-foreground mb-4">Enhanced visibility in search results</p>
+                          <Button className="w-full">Select Standard - ₹499/month</Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
 
@@ -70,7 +101,33 @@ export default function MarketingPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Optimize your business profile and products for better visibility
               </p>
-              <Button className="w-full">Optimize Now</Button>
+              <Dialog open={activeDialog === 'seo'} onOpenChange={() => setActiveDialog(null)}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" onClick={() => setActiveDialog('seo')}>Optimize Now</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>SEO Optimization Tools</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <h3 className="font-medium mb-2">Profile Optimization</h3>
+                        <p className="text-sm text-muted-foreground mb-4">Current SEO Score: 75/100</p>
+                        <div className="space-y-2">
+                          <p className="text-sm">Recommendations:</p>
+                          <ul className="text-sm text-muted-foreground list-disc pl-4">
+                            <li>Add more keywords to your business description</li>
+                            <li>Complete your business address information</li>
+                            <li>Add more product images and descriptions</li>
+                          </ul>
+                        </div>
+                        <Button className="w-full mt-4">Start Optimization</Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
 
@@ -85,7 +142,49 @@ export default function MarketingPage() {
               <p className="text-sm text-muted-foreground mb-4">
                 Track your promotion performance and ROI
               </p>
-              <Button className="w-full">View Analytics</Button>
+              <Dialog open={activeDialog === 'analytics'} onOpenChange={() => setActiveDialog(null)}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" onClick={() => setActiveDialog('analytics')}>View Analytics</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                    <DialogTitle>Marketing Analytics Dashboard</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6 mt-4">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="text-sm font-medium mb-1">Profile Views</h3>
+                          <p className="text-2xl font-bold">1,234</p>
+                          <p className="text-xs text-green-500">↑ 12% this month</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="text-sm font-medium mb-1">Product Clicks</h3>
+                          <p className="text-2xl font-bold">456</p>
+                          <p className="text-xs text-green-500">↑ 8% this month</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4">
+                          <h3 className="text-sm font-medium mb-1">Inquiries</h3>
+                          <p className="text-2xl font-bold">89</p>
+                          <p className="text-xs text-green-500">↑ 15% this month</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    <Card>
+                      <CardContent className="p-4">
+                        <h3 className="font-medium mb-4">Performance Overview</h3>
+                        <div className="h-48 flex items-center justify-center border rounded">
+                          <p className="text-muted-foreground">Analytics chart will be displayed here</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>
