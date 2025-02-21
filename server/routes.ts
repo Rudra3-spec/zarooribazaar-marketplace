@@ -20,21 +20,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/products", async (req, res) => {
-
-  // Business Matching
-  app.get("/api/businesses/matching/:userId", async (req, res) => {
-    if (!req.user) return res.sendStatus(401);
-    const matches = await storage.findMatchingBusinesses(parseInt(req.params.userId), req.query.type as string);
-    res.json(matches);
-  });
-
-  app.get("/api/businesses/recommended/:userId", async (req, res) => {
-    if (!req.user) return res.sendStatus(401);
-    const recommendations = await storage.getRecommendedPartners(parseInt(req.params.userId));
-    res.json(recommendations);
-  });
-
-
     const parsed = insertProductSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json(parsed.error);
@@ -42,6 +27,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const product = await storage.createProduct(parsed.data);
     res.status(201).json(product);
   });
+
+  // Business Matching Routes
+  app.get("/api/businesses/matching/:userId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const matches = await storage.findMatchingBusinesses(
+      parseInt(req.params.userId),
+      req.query.type as string
+    );
+    res.json(matches);
+  });
+
+  app.get("/api/businesses/recommended/:userId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const recommendations = await storage.getRecommendedPartners(
+      parseInt(req.params.userId)
+    );
+    res.json(recommendations);
+  });
+
 
   // Messages
   app.get("/api/messages", async (req, res) => {

@@ -75,6 +75,8 @@ export interface IStorage {
   createWebinar(webinar: InsertWebinar): Promise<Webinar>;
   getWebinarRegistrations(webinarId: number): Promise<WebinarRegistration[]>;
   createWebinarRegistration(registration: InsertWebinarRegistration): Promise<WebinarRegistration>;
+  findMatchingBusinesses(userId: number, businessType: string): Promise<User[]>;
+  getRecommendedPartners(userId: number): Promise<User[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -218,7 +220,12 @@ export class MemStorage implements IStorage {
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = this.currentMessageId++;
-    const message = { ...insertMessage, id };
+    const message: Message = { 
+      ...insertMessage, 
+      id,
+      toUserId: insertMessage.toUserId || null,
+      isAiMessage: insertMessage.isAiMessage || false
+    };
     this.messages.set(id, message);
     return message;
   }
@@ -237,7 +244,13 @@ export class MemStorage implements IStorage {
 
   async createLoanApplication(insertApplication: InsertLoanApplication): Promise<LoanApplication> {
     const id = this.currentLoanApplicationId++;
-    const application = { ...insertApplication, id };
+    const application: LoanApplication = { 
+      ...insertApplication, 
+      id,
+      status: insertApplication.status || 'pending',
+      financialInstitutionId: insertApplication.financialInstitutionId || null,
+      documents: insertApplication.documents || null
+    };
     this.loanApplications.set(id, application);
     return application;
   }
@@ -250,7 +263,12 @@ export class MemStorage implements IStorage {
 
   async createGstRegistration(insertRegistration: InsertGstRegistration): Promise<GstRegistration> {
     const id = this.currentGstRegistrationId++;
-    const registration = { ...insertRegistration, id };
+    const registration: GstRegistration = { 
+      ...insertRegistration, 
+      id,
+      status: insertRegistration.status || 'pending',
+      documents: insertRegistration.documents || null
+    };
     this.gstRegistrations.set(id, registration);
     return registration;
   }
@@ -263,7 +281,13 @@ export class MemStorage implements IStorage {
 
   async createPromotion(insertPromotion: InsertPromotion): Promise<Promotion> {
     const id = this.currentPromotionId++;
-    const promotion = { ...insertPromotion, id };
+    const promotion: Promotion = { 
+      ...insertPromotion, 
+      id,
+      status: insertPromotion.status || 'pending',
+      budget: insertPromotion.budget || null,
+      metrics: insertPromotion.metrics || null
+    };
     this.promotions.set(id, promotion);
     return promotion;
   }
@@ -276,7 +300,15 @@ export class MemStorage implements IStorage {
 
   async createLogistics(insertLogistics: InsertLogistics): Promise<Logistics> {
     const id = this.currentLogisticsId++;
-    const logistics = { ...insertLogistics, id };
+    const logistics: Logistics = { 
+      ...insertLogistics, 
+      id,
+      origin: insertLogistics.origin || null,
+      destination: insertLogistics.destination || null,
+      timeline: insertLogistics.timeline || null,
+      trackingNumber: insertLogistics.trackingNumber || null,
+      courierService: insertLogistics.courierService || null
+    };
     this.logistics.set(id, logistics);
     return logistics;
   }
@@ -287,7 +319,12 @@ export class MemStorage implements IStorage {
 
   async createLearningResource(insertResource: InsertLearningResource): Promise<LearningResource> {
     const id = this.currentLearningResourceId++;
-    const resource = { ...insertResource, id };
+    const resource: LearningResource = { 
+      ...insertResource, 
+      id,
+      duration: insertResource.duration || null,
+      thumbnail: insertResource.thumbnail || null
+    };
     this.learningResources.set(id, resource);
     return resource;
   }
@@ -334,7 +371,12 @@ export class MemStorage implements IStorage {
 
   async createForumPost(insertPost: InsertForumPost): Promise<ForumPost> {
     const id = this.currentForumPostId++;
-    const post: ForumPost = { ...insertPost, id };
+    const post: ForumPost = { 
+      ...insertPost, 
+      id,
+      views: insertPost.views || 0,
+      tags: insertPost.tags || null
+    };
     this.forumPosts.set(id, post);
     return post;
   }
@@ -363,7 +405,14 @@ export class MemStorage implements IStorage {
 
   async createWebinar(insertWebinar: InsertWebinar): Promise<Webinar> {
     const id = this.currentWebinarId++;
-    const webinar: Webinar = { ...insertWebinar, id };
+    const webinar: Webinar = { 
+      ...insertWebinar, 
+      id,
+      status: insertWebinar.status || 'upcoming',
+      maxParticipants: insertWebinar.maxParticipants || null,
+      registrationDeadline: insertWebinar.registrationDeadline || null,
+      meetingLink: insertWebinar.meetingLink || null
+    };
     this.webinars.set(id, webinar);
     return webinar;
   }
@@ -376,7 +425,11 @@ export class MemStorage implements IStorage {
 
   async createWebinarRegistration(insertRegistration: InsertWebinarRegistration): Promise<WebinarRegistration> {
     const id = this.currentWebinarRegistrationId++;
-    const registration: WebinarRegistration = { ...insertRegistration, id };
+    const registration: WebinarRegistration = { 
+      ...insertRegistration, 
+      id,
+      status: insertRegistration.status || 'registered'
+    };
     this.webinarRegistrations.set(id, registration);
     return registration;
   }
@@ -446,37 +499,35 @@ export class MemStorage implements IStorage {
       updatedAt: new Date().toISOString(),
     });
   }
+
+  async findMatchingBusinesses(userId: number, businessType: string): Promise<User[]> {
+    return Array.from(this.users.values()).filter(user => 
+      user.id !== userId && 
+      user.type === businessType
+    );
+  }
+
+  async getRecommendedPartners(userId: number): Promise<User[]> {
+    const user = await this.getUser(userId);
+    if (!user) return [];
+
+    // Match based on complementary business types
+    return Array.from(this.users.values()).filter(partner => 
+      partner.id !== userId && 
+      this.isComplementaryBusiness(user.type, partner.type)
+    );
+  }
+
+  private isComplementaryBusiness(type1: string, type2: string): boolean {
+    const complementaryPairs: Record<string, string[]> = {
+      'manufacturer': ['wholesaler', 'retailer'],
+      'wholesaler': ['manufacturer', 'retailer'],
+      'retailer': ['manufacturer', 'wholesaler'],
+      'supplier': ['distributor'],
+      'distributor': ['supplier']
+    };
+    return complementaryPairs[type1]?.includes(type2) || complementaryPairs[type2]?.includes(type1);
+  }
 }
 
 export const storage = new MemStorage();
-export async function findMatchingBusinesses(userId: number, businessType: string) {
-  const businesses = Array.from(users.values()).filter(user => 
-    user.id !== userId && 
-    user.type === businessType
-  );
-  return businesses;
-}
-
-export async function getRecommendedPartners(userId: number) {
-  const user = users.get(userId);
-  if (!user) return [];
-  
-  // Match based on complementary business types
-  const partners = Array.from(users.values()).filter(partner => 
-    partner.id !== userId && 
-    isComplementaryBusiness(user.type, partner.type)
-  );
-  
-  return partners;
-}
-
-function isComplementaryBusiness(type1: string, type2: string) {
-  const complementaryPairs = {
-    'manufacturer': ['wholesaler', 'retailer'],
-    'wholesaler': ['manufacturer', 'retailer'],
-    'retailer': ['manufacturer', 'wholesaler'],
-    'supplier': ['distributor'],
-    'distributor': ['supplier']
-  };
-  return complementaryPairs[type1]?.includes(type2) || complementaryPairs[type2]?.includes(type1);
-}

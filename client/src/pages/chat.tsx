@@ -15,7 +15,7 @@ interface ChatPageProps {
   welcomeMessage?: string;
 }
 
-export function ChatPage({ autoOpen = false, welcomeMessage }: ChatPageProps) {
+export default function ChatPage({ autoOpen = false, welcomeMessage }: ChatPageProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [message, setMessage] = useState("");
@@ -66,8 +66,14 @@ export function ChatPage({ autoOpen = false, welcomeMessage }: ChatPageProps) {
     };
 
     ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'chat_message' || message.type === 'ai_response') {
+          queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+        }
+      } catch (error) {
+        console.error('Error processing message:', error);
+      }
     };
 
     ws.onerror = (error) => {
@@ -90,23 +96,28 @@ export function ChatPage({ autoOpen = false, welcomeMessage }: ChatPageProps) {
     event.preventDefault();
     if (!message.trim() || (!showAiChat && !selectedUser)) return;
 
-    if (showAiChat) {
-      sendMessageMutation.mutate({
-        content: message,
-        fromUserId: user?.id || 0,
-        toUserId: null,
-        isAiMessage: true,
-        timestamp: new Date().toISOString(),
-      });
-    } else {
-      sendMessageMutation.mutate({
-        content: message,
-        fromUserId: user?.id || 0,
-        toUserId: selectedUser,
-        isAiMessage: false,
-        timestamp: new Date().toISOString(),
-      });
+    if (socket?.readyState === WebSocket.OPEN) {
+      if (showAiChat) {
+        socket.send(JSON.stringify({
+          type: 'ai_message',
+          content: message
+        }));
+      } else {
+        socket.send(JSON.stringify({
+          type: 'chat_message',
+          content: message,
+          toUserId: selectedUser
+        }));
+      }
     }
+
+    sendMessageMutation.mutate({
+      content: message,
+      fromUserId: user?.id || 0,
+      toUserId: showAiChat ? null : selectedUser,
+      isAiMessage: showAiChat,
+      timestamp: new Date().toISOString(),
+    });
   };
 
   const filteredUsers = users.filter(u => 

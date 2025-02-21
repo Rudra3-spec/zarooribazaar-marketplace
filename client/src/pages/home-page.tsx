@@ -1,13 +1,20 @@
-
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Building2, Package, Users, Banknote, TrendingUp, Truck, FileText, UserPlus, ShoppingCart, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { ChatPage } from "./chat";
+import ChatPage from "./chat";
 import { motion } from "framer-motion";
 
-const FeatureCard = ({ icon: Icon, title, description, href, delay = 0 }) => (
+interface FeatureCardProps {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  href: string;
+  delay?: number;
+}
+
+const FeatureCard = ({ icon: Icon, title, description, href, delay = 0 }: FeatureCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -105,7 +112,7 @@ export default function HomePage() {
           />
         </div>
       </div>
-      <ChatPage autoOpen={true} welcomeMessage="Hi! How can I assist you with ZarooriBazaar today?" />
+      {user && <ChatPage autoOpen={false} welcomeMessage="Hi! How can I assist you with ZarooriBazaar today?" />}
     </div>
   );
 }

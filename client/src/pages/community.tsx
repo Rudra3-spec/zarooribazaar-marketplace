@@ -44,7 +44,7 @@ export default function CommunityPage() {
         title: "Success",
         description: "Forum post created successfully",
       });
-      queryClient.invalidateQueries(["/api/forum-posts"]);
+      queryClient.invalidateQueries({ queryKey: ["/api/forum-posts"] });
       forumPostForm.reset();
       setActiveDialog(null);
     },
@@ -67,7 +67,7 @@ export default function CommunityPage() {
         title: "Success",
         description: "Webinar created successfully",
       });
-      queryClient.invalidateQueries(["/api/webinars"]);
+      queryClient.invalidateQueries({ queryKey: ["/api/webinars"] });
       webinarForm.reset();
       setActiveDialog(null);
     },

@@ -1,6 +1,16 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
 import { storage } from './storage';
+import { Session } from 'express-session';
+
+// Extend Session type to include passport data
+declare module 'express-session' {
+  interface Session {
+    passport?: {
+      user?: number;
+    };
+  }
+}
 
 interface WebSocketWithAuth extends WebSocket {
   userId?: number;
@@ -26,7 +36,7 @@ export function setupWebSocket(server: Server) {
 
       const sessionId = decodeURIComponent(sessionMatch[1]);
       const session = await storage.getSession(sessionId);
-      
+
       if (!session?.passport?.user) {
         ws.close();
         return;
@@ -37,15 +47,17 @@ export function setupWebSocket(server: Server) {
       ws.on('message', async (message: string) => {
         try {
           const data = JSON.parse(message.toString());
-          
+
           if (data.type === 'ai_message') {
             // Handle AI chatbot messages
             const response = await handleAIChatbotMessage(data.content);
-            ws.send(JSON.stringify({
-              type: 'ai_response',
-              content: response,
-            }));
-          } else {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({
+                type: 'ai_response',
+                content: response,
+              }));
+            }
+          } else if (data.type === 'chat_message' && data.toUserId) {
             // Broadcast message to the intended recipient
             broadcastMessage(wss, data, ws.userId);
           }
@@ -53,6 +65,12 @@ export function setupWebSocket(server: Server) {
           console.error('Error processing message:', error);
         }
       });
+
+      ws.on('error', (error) => {
+        console.error('WebSocket error:', error);
+        ws.close();
+      });
+
     } catch (error) {
       console.error('WebSocket connection error:', error);
       ws.close();
@@ -79,11 +97,11 @@ function broadcastMessage(wss: WebSocketServer, message: any, fromUserId: number
 async function handleAIChatbotMessage(content: string): Promise<string> {
   // Simple rule-based responses for now
   const normalizedContent = content.toLowerCase();
-  
+
   if (normalizedContent.includes('hello') || normalizedContent.includes('hi')) {
     return "Hello! I'm your AI assistant. How can I help you today?";
   }
-  
+
   if (normalizedContent.includes('help')) {
     return "I can help you with: \n" +
            "- Finding business services\n" +
@@ -92,7 +110,7 @@ async function handleAIChatbotMessage(content: string): Promise<string> {
            "- Logistics support\n" +
            "What would you like to know more about?";
   }
-  
+
   if (normalizedContent.includes('gst')) {
     return "For GST registration, you'll need:\n" +
            "1. PAN Card\n" +
@@ -100,7 +118,7 @@ async function handleAIChatbotMessage(content: string): Promise<string> {
            "3. Address proof\n" +
            "Would you like me to guide you through the registration process?";
   }
-  
+
   if (normalizedContent.includes('marketing') || normalizedContent.includes('promote')) {
     return "I can suggest several marketing strategies:\n" +
            "1. Social media marketing\n" +
@@ -109,6 +127,6 @@ async function handleAIChatbotMessage(content: string): Promise<string> {
            "4. SEO optimization\n" +
            "Which one would you like to explore?";
   }
-  
+
   return "I'm here to help with your business needs. Could you please be more specific about what you're looking for?";
 }

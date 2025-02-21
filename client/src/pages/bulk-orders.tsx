@@ -43,7 +43,7 @@ export default function BulkOrdersPage() {
         title: "Success",
         description: "Bulk order created successfully",
       });
-      queryClient.invalidateQueries(["/api/bulk-orders", user?.id]);
+      queryClient.invalidateQueries({ queryKey: ["/api/bulk-orders", user?.id] });
       bulkOrderForm.reset();
       setActiveDialog(null);
     },
@@ -66,7 +66,7 @@ export default function BulkOrdersPage() {
         title: "Success",
         description: "Wholesale deal created successfully",
       });
-      queryClient.invalidateQueries(["/api/wholesale-deals"]);
+      queryClient.invalidateQueries({ queryKey: ["/api/wholesale-deals"] });
       wholesaleDealForm.reset();
       setActiveDialog(null);
     },
@@ -333,7 +333,7 @@ export default function BulkOrdersPage() {
                         <p className="text-sm">Minimum Quantity: {deal.minQuantity}</p>
                         <p className="text-sm">Price: ₹{deal.pricePerUnit} per unit</p>
                       </div>
-                      <Button 
+                      <Button
                         className="w-full"
                         onClick={() => {
                           bulkOrderForm.setValue("productId", deal.productId);
