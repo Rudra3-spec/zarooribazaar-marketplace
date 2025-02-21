@@ -134,6 +134,76 @@ export const learningResources = pgTable("learning_resources", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const bulkOrders = pgTable("bulk_orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  productId: integer("product_id").notNull(),
+  quantity: integer("quantity").notNull(),
+  requestedPrice: integer("requested_price").notNull(),
+  status: text("status").notNull().default("pending"),
+  notes: text("notes"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const wholesaleDeals = pgTable("wholesale_deals", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  productId: integer("product_id").notNull(),
+  minQuantity: integer("min_quantity").notNull(),
+  pricePerUnit: integer("price_per_unit").notNull(),
+  availability: boolean("availability").notNull().default(true),
+  description: text("description"),
+  terms: text("terms"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const forumPosts = pgTable("forum_posts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull(),
+  tags: text("tags").array(),
+  views: integer("views").notNull().default(0),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const forumComments = pgTable("forum_comments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull(),
+  userId: integer("user_id").notNull(),
+  content: text("content").notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const webinars = pgTable("webinars", {
+  id: serial("id").primaryKey(),
+  hostId: integer("host_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  scheduledAt: text("scheduled_at").notNull(),
+  duration: integer("duration").notNull(),
+  maxParticipants: integer("max_participants"),
+  registrationDeadline: text("registration_deadline"),
+  status: text("status").notNull().default("upcoming"),
+  meetingLink: text("meeting_link"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const webinarRegistrations = pgTable("webinar_registrations", {
+  id: serial("id").primaryKey(),
+  webinarId: integer("webinar_id").notNull(),
+  userId: integer("user_id").notNull(),
+  status: text("status").notNull().default("registered"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users);
 export const insertProductSchema = createInsertSchema(products);
 export const insertMessageSchema = createInsertSchema(messages);
@@ -142,6 +212,12 @@ export const insertGstRegistrationSchema = createInsertSchema(gstRegistrations);
 export const insertPromotionSchema = createInsertSchema(promotions);
 export const insertLogisticsSchema = createInsertSchema(logistics);
 export const insertLearningResourceSchema = createInsertSchema(learningResources);
+export const insertBulkOrderSchema = createInsertSchema(bulkOrders);
+export const insertWholesaleDealSchema = createInsertSchema(wholesaleDeals);
+export const insertForumPostSchema = createInsertSchema(forumPosts);
+export const insertForumCommentSchema = createInsertSchema(forumComments);
+export const insertWebinarSchema = createInsertSchema(webinars);
+export const insertWebinarRegistrationSchema = createInsertSchema(webinarRegistrations);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -151,6 +227,12 @@ export type InsertGstRegistration = z.infer<typeof insertGstRegistrationSchema>;
 export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
 export type InsertLogistics = z.infer<typeof insertLogisticsSchema>;
 export type InsertLearningResource = z.infer<typeof insertLearningResourceSchema>;
+export type InsertBulkOrder = z.infer<typeof insertBulkOrderSchema>;
+export type InsertWholesaleDeal = z.infer<typeof insertWholesaleDealSchema>;
+export type InsertForumPost = z.infer<typeof insertForumPostSchema>;
+export type InsertForumComment = z.infer<typeof insertForumCommentSchema>;
+export type InsertWebinar = z.infer<typeof insertWebinarSchema>;
+export type InsertWebinarRegistration = z.infer<typeof insertWebinarRegistrationSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Product = typeof products.$inferSelect;
@@ -160,3 +242,9 @@ export type GstRegistration = typeof gstRegistrations.$inferSelect;
 export type Promotion = typeof promotions.$inferSelect;
 export type Logistics = typeof logistics.$inferSelect;
 export type LearningResource = typeof learningResources.$inferSelect;
+export type BulkOrder = typeof bulkOrders.$inferSelect;
+export type WholesaleDeal = typeof wholesaleDeals.$inferSelect;
+export type ForumPost = typeof forumPosts.$inferSelect;
+export type ForumComment = typeof forumComments.$inferSelect;
+export type Webinar = typeof webinars.$inferSelect;
+export type WebinarRegistration = typeof webinarRegistrations.$inferSelect;

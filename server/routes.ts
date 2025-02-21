@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { insertProductSchema, insertMessageSchema, insertLoanApplicationSchema, insertGstRegistrationSchema, insertPromotionSchema, insertLogisticsSchema, insertLearningResourceSchema } from "@shared/schema";
+import { insertProductSchema, insertMessageSchema, insertLoanApplicationSchema, insertGstRegistrationSchema, insertPromotionSchema, insertLogisticsSchema, insertLearningResourceSchema, insertBulkOrderSchema, insertWholesaleDealSchema, insertForumPostSchema, insertForumCommentSchema, insertWebinarSchema, insertWebinarRegistrationSchema } from "@shared/schema";
 import { setupWebSocket } from "./websocket";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -171,6 +171,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
       updatedAt: new Date().toISOString(),
     });
     res.status(201).json(resource);
+  });
+
+  // Bulk Orders
+  app.get("/api/bulk-orders/:userId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const orders = await storage.getBulkOrders(parseInt(req.params.userId));
+    res.json(orders);
+  });
+
+  app.post("/api/bulk-orders", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertBulkOrderSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const order = await storage.createBulkOrder({
+      ...parsed.data,
+      userId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(order);
+  });
+
+  // Wholesale Deals
+  app.get("/api/wholesale-deals", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const deals = await storage.getWholesaleDeals();
+    res.json(deals);
+  });
+
+  app.get("/api/wholesale-deals/user/:userId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const deals = await storage.getWholesaleDealsByUser(parseInt(req.params.userId));
+    res.json(deals);
+  });
+
+  app.post("/api/wholesale-deals", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertWholesaleDealSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const deal = await storage.createWholesaleDeal({
+      ...parsed.data,
+      userId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(deal);
+  });
+
+  // Forum Posts
+  app.get("/api/forum-posts", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const posts = await storage.getForumPosts();
+    res.json(posts);
+  });
+
+  app.get("/api/forum-posts/:postId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const post = await storage.getForumPost(parseInt(req.params.postId));
+    if (!post) return res.sendStatus(404);
+    res.json(post);
+  });
+
+  app.post("/api/forum-posts", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertForumPostSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const post = await storage.createForumPost({
+      ...parsed.data,
+      userId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(post);
+  });
+
+  // Forum Comments
+  app.get("/api/forum-posts/:postId/comments", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const comments = await storage.getForumComments(parseInt(req.params.postId));
+    res.json(comments);
+  });
+
+  app.post("/api/forum-comments", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertForumCommentSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const comment = await storage.createForumComment({
+      ...parsed.data,
+      userId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(comment);
+  });
+
+  // Webinars
+  app.get("/api/webinars", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const webinars = await storage.getWebinars();
+    res.json(webinars);
+  });
+
+  app.get("/api/webinars/:webinarId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const webinar = await storage.getWebinar(parseInt(req.params.webinarId));
+    if (!webinar) return res.sendStatus(404);
+    res.json(webinar);
+  });
+
+  app.post("/api/webinars", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertWebinarSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const webinar = await storage.createWebinar({
+      ...parsed.data,
+      hostId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(webinar);
+  });
+
+  // Webinar Registrations
+  app.get("/api/webinars/:webinarId/registrations", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const registrations = await storage.getWebinarRegistrations(parseInt(req.params.webinarId));
+    res.json(registrations);
+  });
+
+  app.post("/api/webinar-registrations", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertWebinarRegistrationSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const registration = await storage.createWebinarRegistration({
+      ...parsed.data,
+      userId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(registration);
   });
 
   const httpServer = createServer(app);

@@ -1,4 +1,4 @@
-import { User, Product, Message, InsertUser, InsertProduct, InsertMessage, LoanApplication, GstRegistration, InsertLoanApplication, InsertGstRegistration, Promotion, Logistics, LearningResource, InsertPromotion, InsertLogistics, InsertLearningResource } from "@shared/schema";
+import { User, Product, Message, InsertUser, InsertProduct, InsertMessage, LoanApplication, GstRegistration, InsertLoanApplication, InsertGstRegistration, Promotion, Logistics, LearningResource, InsertPromotion, InsertLogistics, InsertLearningResource, BulkOrder, InsertBulkOrder, WholesaleDeal, InsertWholesaleDeal, ForumPost, InsertForumPost, ForumComment, InsertForumComment, Webinar, InsertWebinar, WebinarRegistration, InsertWebinarRegistration } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes } from "crypto";
@@ -52,6 +52,29 @@ export interface IStorage {
   // Session operations
   sessionStore: session.Store;
   getSession(sessionId: string): Promise<session.Session | null>;
+
+  // Bulk Order operations
+  getBulkOrders(userId: number): Promise<BulkOrder[]>;
+  createBulkOrder(order: InsertBulkOrder): Promise<BulkOrder>;
+
+  // Wholesale Deal operations
+  getWholesaleDeals(): Promise<WholesaleDeal[]>;
+  getWholesaleDealsByUser(userId: number): Promise<WholesaleDeal[]>;
+  createWholesaleDeal(deal: InsertWholesaleDeal): Promise<WholesaleDeal>;
+
+  // Forum operations
+  getForumPosts(): Promise<ForumPost[]>;
+  getForumPost(postId: number): Promise<ForumPost | undefined>;
+  createForumPost(post: InsertForumPost): Promise<ForumPost>;
+  getForumComments(postId: number): Promise<ForumComment[]>;
+  createForumComment(comment: InsertForumComment): Promise<ForumComment>;
+
+  // Webinar operations
+  getWebinars(): Promise<Webinar[]>;
+  getWebinar(webinarId: number): Promise<Webinar | undefined>;
+  createWebinar(webinar: InsertWebinar): Promise<Webinar>;
+  getWebinarRegistrations(webinarId: number): Promise<WebinarRegistration[]>;
+  createWebinarRegistration(registration: InsertWebinarRegistration): Promise<WebinarRegistration>;
 }
 
 export class MemStorage implements IStorage {
@@ -72,6 +95,19 @@ export class MemStorage implements IStorage {
   private currentPromotionId: number;
   private currentLogisticsId: number;
   private currentLearningResourceId: number;
+  private bulkOrders: Map<number, BulkOrder>;
+  private wholesaleDeals: Map<number, WholesaleDeal>;
+  private forumPosts: Map<number, ForumPost>;
+  private forumComments: Map<number, ForumComment>;
+  private webinars: Map<number, Webinar>;
+  private webinarRegistrations: Map<number, WebinarRegistration>;
+
+  private currentBulkOrderId: number;
+  private currentWholesaleDealId: number;
+  private currentForumPostId: number;
+  private currentForumCommentId: number;
+  private currentWebinarId: number;
+  private currentWebinarRegistrationId: number;
 
   constructor() {
     this.users = new Map();
@@ -93,6 +129,19 @@ export class MemStorage implements IStorage {
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
+    this.bulkOrders = new Map();
+    this.wholesaleDeals = new Map();
+    this.forumPosts = new Map();
+    this.forumComments = new Map();
+    this.webinars = new Map();
+    this.webinarRegistrations = new Map();
+
+    this.currentBulkOrderId = 1;
+    this.currentWholesaleDealId = 1;
+    this.currentForumPostId = 1;
+    this.currentForumCommentId = 1;
+    this.currentWebinarId = 1;
+    this.currentWebinarRegistrationId = 1;
 
     // Create default admin account and financial institution
     this.initializeAdmin();
@@ -241,6 +290,95 @@ export class MemStorage implements IStorage {
     const resource = { ...insertResource, id };
     this.learningResources.set(id, resource);
     return resource;
+  }
+  // Bulk Order Methods
+  async getBulkOrders(userId: number): Promise<BulkOrder[]> {
+    return Array.from(this.bulkOrders.values()).filter(
+      (order) => order.userId === userId
+    );
+  }
+
+  async createBulkOrder(insertOrder: InsertBulkOrder): Promise<BulkOrder> {
+    const id = this.currentBulkOrderId++;
+    const order: BulkOrder = { ...insertOrder, id };
+    this.bulkOrders.set(id, order);
+    return order;
+  }
+
+  // Wholesale Deal Methods
+  async getWholesaleDeals(): Promise<WholesaleDeal[]> {
+    return Array.from(this.wholesaleDeals.values());
+  }
+
+  async getWholesaleDealsByUser(userId: number): Promise<WholesaleDeal[]> {
+    return Array.from(this.wholesaleDeals.values()).filter(
+      (deal) => deal.userId === userId
+    );
+  }
+
+  async createWholesaleDeal(insertDeal: InsertWholesaleDeal): Promise<WholesaleDeal> {
+    const id = this.currentWholesaleDealId++;
+    const deal: WholesaleDeal = { ...insertDeal, id };
+    this.wholesaleDeals.set(id, deal);
+    return deal;
+  }
+
+  // Forum Methods
+  async getForumPosts(): Promise<ForumPost[]> {
+    return Array.from(this.forumPosts.values());
+  }
+
+  async getForumPost(postId: number): Promise<ForumPost | undefined> {
+    return this.forumPosts.get(postId);
+  }
+
+  async createForumPost(insertPost: InsertForumPost): Promise<ForumPost> {
+    const id = this.currentForumPostId++;
+    const post: ForumPost = { ...insertPost, id };
+    this.forumPosts.set(id, post);
+    return post;
+  }
+
+  async getForumComments(postId: number): Promise<ForumComment[]> {
+    return Array.from(this.forumComments.values()).filter(
+      (comment) => comment.postId === postId
+    );
+  }
+
+  async createForumComment(insertComment: InsertForumComment): Promise<ForumComment> {
+    const id = this.currentForumCommentId++;
+    const comment: ForumComment = { ...insertComment, id };
+    this.forumComments.set(id, comment);
+    return comment;
+  }
+
+  // Webinar Methods
+  async getWebinars(): Promise<Webinar[]> {
+    return Array.from(this.webinars.values());
+  }
+
+  async getWebinar(webinarId: number): Promise<Webinar | undefined> {
+    return this.webinars.get(webinarId);
+  }
+
+  async createWebinar(insertWebinar: InsertWebinar): Promise<Webinar> {
+    const id = this.currentWebinarId++;
+    const webinar: Webinar = { ...insertWebinar, id };
+    this.webinars.set(id, webinar);
+    return webinar;
+  }
+
+  async getWebinarRegistrations(webinarId: number): Promise<WebinarRegistration[]> {
+    return Array.from(this.webinarRegistrations.values()).filter(
+      (registration) => registration.webinarId === webinarId
+    );
+  }
+
+  async createWebinarRegistration(insertRegistration: InsertWebinarRegistration): Promise<WebinarRegistration> {
+    const id = this.currentWebinarRegistrationId++;
+    const registration: WebinarRegistration = { ...insertRegistration, id };
+    this.webinarRegistrations.set(id, registration);
+    return registration;
   }
   private async initializeAdmin() {
     const hashedPassword = await hashInitialPassword("admin123");
