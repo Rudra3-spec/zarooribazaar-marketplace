@@ -1,24 +1,33 @@
 import { User, Product, Message, InsertUser, InsertProduct, InsertMessage } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import { scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
 
 const MemoryStore = createMemoryStore(session);
+const scryptAsync = promisify(scrypt);
+
+async function hashInitialPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
 
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Product operations
   getProducts(): Promise<Product[]>;
   getProductsByUser(userId: number): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
-  
+
   // Message operations
   getMessages(userId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
-  
+
   sessionStore: session.Store;
 }
 
@@ -42,10 +51,15 @@ export class MemStorage implements IStorage {
       checkPeriod: 86400000,
     });
 
-    // Create default admin account
+    // Create default admin account with pre-hashed password
+    this.initializeAdmin();
+  }
+
+  private async initializeAdmin() {
+    const hashedPassword = await hashInitialPassword("admin123");
     this.createUser({
       username: "admin",
-      password: "admin123", // This will be hashed by auth.ts
+      password: hashedPassword,
       businessName: "ZarooriBazaar Admin",
       type: "Platform Administrator",
       description: "Main administrator of ZarooriBazaar platform",
@@ -68,7 +82,13 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user = { ...insertUser, id };
+    const user = { 
+      ...insertUser, 
+      id,
+      description: insertUser.description || null,
+      contactInfo: insertUser.contactInfo || null,
+      isAdmin: insertUser.isAdmin || false
+    };
     this.users.set(id, user);
     return user;
   }
@@ -85,7 +105,12 @@ export class MemStorage implements IStorage {
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
     const id = this.currentProductId++;
-    const product = { ...insertProduct, id };
+    const product = { 
+      ...insertProduct, 
+      id,
+      description: insertProduct.description || null,
+      images: insertProduct.images || null
+    };
     this.products.set(id, product);
     return product;
   }
