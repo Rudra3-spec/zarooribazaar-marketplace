@@ -1,4 +1,4 @@
-import { User, Product, Message, InsertUser, InsertProduct, InsertMessage, LoanApplication, GstRegistration, InsertLoanApplication, InsertGstRegistration } from "@shared/schema";
+import { User, Product, Message, InsertUser, InsertProduct, InsertMessage, LoanApplication, GstRegistration, InsertLoanApplication, InsertGstRegistration, Promotion, Logistics, LearningResource, InsertPromotion, InsertLogistics, InsertLearningResource } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes } from "crypto";
@@ -37,6 +37,18 @@ export interface IStorage {
   getGstRegistration(userId: number): Promise<GstRegistration | undefined>;
   createGstRegistration(registration: InsertGstRegistration): Promise<GstRegistration>;
 
+  // Promotion operations
+  getPromotions(userId: number): Promise<Promotion[]>;
+  createPromotion(promotion: InsertPromotion): Promise<Promotion>;
+
+  // Logistics operations
+  getLogistics(userId: number): Promise<Logistics[]>;
+  createLogistics(logistics: InsertLogistics): Promise<Logistics>;
+
+  // Learning Resource operations
+  getLearningResources(): Promise<LearningResource[]>;
+  createLearningResource(resource: InsertLearningResource): Promise<LearningResource>;
+
   sessionStore: session.Store;
 }
 
@@ -46,12 +58,18 @@ export class MemStorage implements IStorage {
   private messages: Map<number, Message>;
   private loanApplications: Map<number, LoanApplication>;
   private gstRegistrations: Map<number, GstRegistration>;
+  private promotions: Map<number, Promotion>;
+  private logistics: Map<number, Logistics>;
+  private learningResources: Map<number, LearningResource>;
   sessionStore: session.Store;
   private currentUserId: number;
   private currentProductId: number;
   private currentMessageId: number;
   private currentLoanApplicationId: number;
   private currentGstRegistrationId: number;
+  private currentPromotionId: number;
+  private currentLogisticsId: number;
+  private currentLearningResourceId: number;
 
   constructor() {
     this.users = new Map();
@@ -59,11 +77,17 @@ export class MemStorage implements IStorage {
     this.messages = new Map();
     this.loanApplications = new Map();
     this.gstRegistrations = new Map();
+    this.promotions = new Map();
+    this.logistics = new Map();
+    this.learningResources = new Map();
     this.currentUserId = 1;
     this.currentProductId = 1;
     this.currentMessageId = 1;
     this.currentLoanApplicationId = 1;
     this.currentGstRegistrationId = 1;
+    this.currentPromotionId = 1;
+    this.currentLogisticsId = 1;
+    this.currentLearningResourceId = 1;
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
@@ -71,6 +95,7 @@ export class MemStorage implements IStorage {
     // Create default admin account and financial institution
     this.initializeAdmin();
     this.initializeFinancialInstitution();
+    this.initializeLearningResources();
   }
 
   private async initializeAdmin() {
@@ -110,6 +135,33 @@ export class MemStorage implements IStorage {
         phone: "1800-MSME-LOAN",
         address: "Financial District, Mumbai"
       }
+    });
+  }
+
+  private async initializeLearningResources() {
+    // Add some initial learning resources
+    this.createLearningResource({
+      title: "Introduction to Digital Marketing",
+      description: "Learn the basics of digital marketing for your MSME",
+      type: "course",
+      content: "Digital marketing fundamentals course content...",
+      category: "Marketing",
+      author: "Digital Marketing Expert",
+      thumbnail: "https://example.com/thumbnail1.jpg",
+      duration: 60,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    this.createLearningResource({
+      title: "Understanding GST for Small Businesses",
+      description: "A comprehensive guide to GST compliance",
+      type: "blog",
+      content: "GST guide content...",
+      category: "Finance",
+      author: "Tax Expert",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
   }
 
@@ -205,6 +257,43 @@ export class MemStorage implements IStorage {
     const registration = { ...insertRegistration, id };
     this.gstRegistrations.set(id, registration);
     return registration;
+  }
+
+  async getPromotions(userId: number): Promise<Promotion[]> {
+    return Array.from(this.promotions.values()).filter(
+      (promo) => promo.userId === userId
+    );
+  }
+
+  async createPromotion(insertPromotion: InsertPromotion): Promise<Promotion> {
+    const id = this.currentPromotionId++;
+    const promotion = { ...insertPromotion, id };
+    this.promotions.set(id, promotion);
+    return promotion;
+  }
+
+  async getLogistics(userId: number): Promise<Logistics[]> {
+    return Array.from(this.logistics.values()).filter(
+      (shipment) => shipment.userId === userId
+    );
+  }
+
+  async createLogistics(insertLogistics: InsertLogistics): Promise<Logistics> {
+    const id = this.currentLogisticsId++;
+    const logistics = { ...insertLogistics, id };
+    this.logistics.set(id, logistics);
+    return logistics;
+  }
+
+  async getLearningResources(): Promise<LearningResource[]> {
+    return Array.from(this.learningResources.values());
+  }
+
+  async createLearningResource(insertResource: InsertLearningResource): Promise<LearningResource> {
+    const id = this.currentLearningResourceId++;
+    const resource = { ...insertResource, id };
+    this.learningResources.set(id, resource);
+    return resource;
   }
 }
 

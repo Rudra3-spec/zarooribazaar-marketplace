@@ -11,6 +11,9 @@ import ProductListings from "@/pages/product-listings";
 import Profile from "@/pages/profile";
 import Financing from "@/pages/financing";
 import GstServices from "@/pages/gst-services";
+import Marketing from "@/pages/marketing";
+import Logistics from "@/pages/logistics";
+import Learning from "@/pages/learning";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navigation from "./components/ui/navigation";
 
@@ -23,6 +26,9 @@ function Router() {
       <ProtectedRoute path="/products" component={ProductListings} />
       <ProtectedRoute path="/financing" component={Financing} />
       <ProtectedRoute path="/gst-services" component={GstServices} />
+      <ProtectedRoute path="/marketing" component={Marketing} />
+      <ProtectedRoute path="/logistics" component={Logistics} />
+      <ProtectedRoute path="/learning" component={Learning} />
       <ProtectedRoute path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>

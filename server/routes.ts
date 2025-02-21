@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { insertProductSchema, insertMessageSchema, insertLoanApplicationSchema, insertGstRegistrationSchema } from "@shared/schema";
+import { insertProductSchema, insertMessageSchema, insertLoanApplicationSchema, insertGstRegistrationSchema, insertPromotionSchema, insertLogisticsSchema, insertLearningResourceSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
@@ -105,6 +105,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       updatedAt: new Date().toISOString(),
     });
     res.status(201).json(registration);
+  });
+
+  // Promotions
+  app.get("/api/promotions/:userId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const promotions = await storage.getPromotions(parseInt(req.params.userId));
+    res.json(promotions);
+  });
+
+  app.post("/api/promotions", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertPromotionSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const promotion = await storage.createPromotion({
+      ...parsed.data,
+      userId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(promotion);
+  });
+
+  // Logistics
+  app.get("/api/logistics/:userId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const shipments = await storage.getLogistics(parseInt(req.params.userId));
+    res.json(shipments);
+  });
+
+  app.post("/api/logistics", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const parsed = insertLogisticsSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const shipment = await storage.createLogistics({
+      ...parsed.data,
+      userId: req.user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(shipment);
+  });
+
+  // Learning Resources
+  app.get("/api/learning-resources", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const resources = await storage.getLearningResources();
+    res.json(resources);
+  });
+
+  app.post("/api/learning-resources", async (req, res) => {
+    if (!req.user?.isAdmin) return res.sendStatus(403);
+    const parsed = insertLearningResourceSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    const resource = await storage.createLearningResource({
+      ...parsed.data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    res.status(201).json(resource);
   });
 
   const httpServer = createServer(app);
