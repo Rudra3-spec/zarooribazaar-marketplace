@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,28 +13,79 @@ import {
 } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import { Promotion } from "@shared/schema";
+import { Promotion, insertPromotionSchema } from "@shared/schema";
 import { Megaphone, TrendingUp, BarChart } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function MarketingPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [activeDialog, setActiveDialog] = useState<'listing' | 'seo' | 'analytics' | null>(null);
 
   const { data: promotions } = useQuery<Promotion[]>({
     queryKey: ["/api/promotions", user?.id],
   });
 
+  const createPromotionMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/promotions", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Promotion created successfully",
+      });
+      queryClient.invalidateQueries(["/api/promotions", user?.id]);
+      form.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const form = useForm({
+    resolver: zodResolver(insertPromotionSchema),
     defaultValues: {
       title: "",
       description: "",
       type: "",
-      budget: "",
+      budget: 0,
       startDate: "",
       endDate: "",
     },
   });
+
+  const onSubmit = (data: any) => {
+    createPromotionMutation.mutate(data);
+  };
+
+  const handleListingSelect = (type: 'premium' | 'standard') => {
+    createPromotionMutation.mutate({
+      title: `${type === 'premium' ? 'Premium' : 'Standard'} Featured Listing`,
+      description: `${type === 'premium' ? 'Top' : 'Enhanced'} placement in search results`,
+      type: 'listing',
+      budget: type === 'premium' ? 999 : 499,
+      startDate: new Date().toISOString(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+    });
+    setActiveDialog(null);
+  };
+
+  const handleSEOOptimization = () => {
+    toast({
+      title: "Starting Optimization",
+      description: "Our system is analyzing your profile for optimization opportunities",
+    });
+    setActiveDialog(null);
+  };
 
   return (
     <div className="container py-8">
@@ -73,14 +124,26 @@ export default function MarketingPage() {
                         <CardContent className="p-4">
                           <h3 className="font-medium mb-2">Premium Package</h3>
                           <p className="text-sm text-muted-foreground mb-4">Top placement in search results and category pages</p>
-                          <Button className="w-full">Select Premium - ₹999/month</Button>
+                          <Button 
+                            className="w-full" 
+                            onClick={() => handleListingSelect('premium')}
+                            disabled={createPromotionMutation.isPending}
+                          >
+                            Select Premium - ₹999/month
+                          </Button>
                         </CardContent>
                       </Card>
                       <Card>
                         <CardContent className="p-4">
                           <h3 className="font-medium mb-2">Standard Package</h3>
                           <p className="text-sm text-muted-foreground mb-4">Enhanced visibility in search results</p>
-                          <Button className="w-full">Select Standard - ₹499/month</Button>
+                          <Button 
+                            className="w-full"
+                            onClick={() => handleListingSelect('standard')}
+                            disabled={createPromotionMutation.isPending}
+                          >
+                            Select Standard - ₹499/month
+                          </Button>
                         </CardContent>
                       </Card>
                     </div>
@@ -122,7 +185,12 @@ export default function MarketingPage() {
                             <li>Add more product images and descriptions</li>
                           </ul>
                         </div>
-                        <Button className="w-full mt-4">Start Optimization</Button>
+                        <Button 
+                          className="w-full mt-4"
+                          onClick={handleSEOOptimization}
+                        >
+                          Start Optimization
+                        </Button>
                       </CardContent>
                     </Card>
                   </div>
@@ -195,7 +263,7 @@ export default function MarketingPage() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
                   name="title"
@@ -268,7 +336,13 @@ export default function MarketingPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full">Create Promotion</Button>
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={createPromotionMutation.isPending}
+                >
+                  Create Promotion
+                </Button>
               </form>
             </Form>
           </CardContent>

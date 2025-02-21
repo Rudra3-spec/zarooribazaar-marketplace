@@ -9,9 +9,11 @@ import { LearningResource } from "@shared/schema";
 import { GraduationCap, BookOpen, Play, LineChart } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LearningPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [activeDialog, setActiveDialog] = useState<'growth' | 'schemes' | 'skills' | null>(null);
 
   const { data: resources } = useQuery<LearningResource[]>({
@@ -21,6 +23,30 @@ export default function LearningPage() {
   const blogs = resources?.filter(resource => resource.type === 'blog') || [];
   const videos = resources?.filter(resource => resource.type === 'video') || [];
   const courses = resources?.filter(resource => resource.type === 'course') || [];
+
+  const handleStartLearning = (title: string) => {
+    toast({
+      title: "Starting Course",
+      description: `You're now enrolled in ${title}. Good luck with your learning journey!`,
+    });
+    setActiveDialog(null);
+  };
+
+  const handleViewDetails = (title: string) => {
+    toast({
+      title: "Accessing Details",
+      description: `Viewing detailed information about ${title}`,
+    });
+    setActiveDialog(null);
+  };
+
+  const handleStartCourse = (title: string) => {
+    toast({
+      title: "Course Started",
+      description: `You've started ${title}. Your progress will be tracked automatically.`,
+    });
+    setActiveDialog(null);
+  };
 
   return (
     <div className="container py-8">
@@ -58,14 +84,24 @@ export default function LearningPage() {
                         <CardContent className="p-4">
                           <h3 className="font-medium mb-2">Market Analysis Guide</h3>
                           <p className="text-sm text-muted-foreground mb-4">Learn how to analyze your market and identify growth opportunities</p>
-                          <Button className="w-full">Start Learning</Button>
+                          <Button 
+                            className="w-full"
+                            onClick={() => handleStartLearning('Market Analysis Guide')}
+                          >
+                            Start Learning
+                          </Button>
                         </CardContent>
                       </Card>
                       <Card>
                         <CardContent className="p-4">
                           <h3 className="font-medium mb-2">Financial Planning</h3>
                           <p className="text-sm text-muted-foreground mb-4">Master the basics of business financial planning</p>
-                          <Button className="w-full">Start Learning</Button>
+                          <Button 
+                            className="w-full"
+                            onClick={() => handleStartLearning('Financial Planning')}
+                          >
+                            Start Learning
+                          </Button>
                         </CardContent>
                       </Card>
                     </div>
@@ -105,7 +141,12 @@ export default function LearningPage() {
                             <li>Prime Minister's Employment Generation Programme</li>
                             <li>Credit Guarantee Fund Scheme</li>
                           </ul>
-                          <Button className="w-full">View Details</Button>
+                          <Button 
+                            className="w-full"
+                            onClick={() => handleViewDetails('MSME Development Schemes')}
+                          >
+                            View Details
+                          </Button>
                         </CardContent>
                       </Card>
                     </div>
@@ -140,14 +181,24 @@ export default function LearningPage() {
                         <CardContent className="p-4">
                           <h3 className="font-medium mb-2">Social Media Marketing</h3>
                           <p className="text-sm text-muted-foreground mb-4">Learn to promote your business on social platforms</p>
-                          <Button className="w-full">Start Course</Button>
+                          <Button 
+                            className="w-full"
+                            onClick={() => handleStartCourse('Social Media Marketing')}
+                          >
+                            Start Course
+                          </Button>
                         </CardContent>
                       </Card>
                       <Card>
                         <CardContent className="p-4">
                           <h3 className="font-medium mb-2">E-commerce Basics</h3>
                           <p className="text-sm text-muted-foreground mb-4">Set up and manage your online store</p>
-                          <Button className="w-full">Start Course</Button>
+                          <Button 
+                            className="w-full"
+                            onClick={() => handleStartCourse('E-commerce Basics')}
+                          >
+                            Start Course
+                          </Button>
                         </CardContent>
                       </Card>
                     </div>
@@ -183,7 +234,18 @@ export default function LearningPage() {
                         </p>
                         <div className="flex items-center justify-between">
                           <span className="text-sm">By {blog.author}</span>
-                          <Button variant="outline" size="sm">Read More</Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "Opening Blog",
+                                description: `Reading ${blog.title}`,
+                              });
+                            }}
+                          >
+                            Read More
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -214,7 +276,18 @@ export default function LearningPage() {
                         </p>
                         <div className="mt-4 flex items-center justify-between">
                           <span className="text-sm">{video.duration} mins</span>
-                          <Button variant="outline" size="sm">Watch Now</Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              toast({
+                                title: "Starting Video",
+                                description: `Playing ${video.title}`,
+                              });
+                            }}
+                          >
+                            Watch Now
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -240,7 +313,16 @@ export default function LearningPage() {
                               {course.duration} mins
                             </p>
                           </div>
-                          <Button>Enroll Now</Button>
+                          <Button
+                            onClick={() => {
+                              toast({
+                                title: "Course Enrollment",
+                                description: `You've enrolled in ${course.title}`,
+                              });
+                            }}
+                          >
+                            Enroll Now
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
