@@ -4,13 +4,11 @@ import { Link } from "wouter";
 import { Building2, Package, Users, Banknote, TrendingUp, Truck, FileText, UserPlus, ShoppingCart } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-// Placeholder Chat component
+import { ChatPage } from "./chat";
+
+// Integrated Chat component
 function Chat() {
-  return (
-    <div className="fixed bottom-4 right-4 bg-white shadow-md rounded-lg p-4">
-      <p className="text-gray-700">Need help? I'm here!</p>
-    </div>
-  );
+  return <ChatPage autoOpen={true} welcomeMessage="Hi! How can I assist you with ZarooriBazaar today?" />;
 }
 
 

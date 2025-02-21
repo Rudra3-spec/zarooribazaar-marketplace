@@ -10,16 +10,21 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-export default function ChatPage() {
+interface ChatPageProps {
+  autoOpen?: boolean;
+  welcomeMessage?: string;
+}
+
+export function ChatPage({ autoOpen = false, welcomeMessage }: ChatPageProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [showAiChat, setShowAiChat] = useState(false);
+  const [showAiChat, setShowAiChat] = useState(true);
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(true);
-const [showWelcome, setShowWelcome] = useState(true);
+  const [isOpen, setIsOpen] = useState(autoOpen);
+  const [showWelcome, setShowWelcome] = useState(!!welcomeMessage);
 
   const { data: messages } = useQuery<Message[]>({
     queryKey: ["/api/messages", user?.id],
