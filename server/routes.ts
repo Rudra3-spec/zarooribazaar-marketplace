@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { insertProductSchema, insertMessageSchema, insertLoanApplicationSchema, insertGstRegistrationSchema, insertPromotionSchema, insertLogisticsSchema, insertLearningResourceSchema } from "@shared/schema";
+import { setupWebSocket } from "./websocket";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
@@ -173,5 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  setupWebSocket(httpServer);
+
   return httpServer;
 }

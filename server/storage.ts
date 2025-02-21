@@ -49,7 +49,9 @@ export interface IStorage {
   getLearningResources(): Promise<LearningResource[]>;
   createLearningResource(resource: InsertLearningResource): Promise<LearningResource>;
 
+  // Session operations
   sessionStore: session.Store;
+  getSession(sessionId: string): Promise<session.Session | null>;
 }
 
 export class MemStorage implements IStorage {
@@ -98,70 +100,15 @@ export class MemStorage implements IStorage {
     this.initializeLearningResources();
   }
 
-  private async initializeAdmin() {
-    const hashedPassword = await hashInitialPassword("admin123");
-    this.createUser({
-      username: "admin",
-      password: hashedPassword,
-      businessName: "ZarooriBazaar Admin",
-      type: "Platform Administrator",
-      description: "Main administrator of ZarooriBazaar platform",
-      isAdmin: true,
-      isFinancialInstitution: false,
-      creditScore: null,
-      gstNumber: null,
-      gstStatus: null,
-      contactInfo: {
-        email: "admin@zooribazaar.com"
-      }
-    });
-  }
-
-  private async initializeFinancialInstitution() {
-    const hashedPassword = await hashInitialPassword("bank123");
-    this.createUser({
-      username: "bank",
-      password: hashedPassword,
-      businessName: "MSME Finance Bank",
-      type: "Financial Institution",
-      description: "Leading provider of MSME loans and financial services",
-      isAdmin: false,
-      isFinancialInstitution: true,
-      creditScore: null,
-      gstNumber: null,
-      gstStatus: null,
-      contactInfo: {
-        email: "loans@msmefinance.com",
-        phone: "1800-MSME-LOAN",
-        address: "Financial District, Mumbai"
-      }
-    });
-  }
-
-  private async initializeLearningResources() {
-    // Add some initial learning resources
-    this.createLearningResource({
-      title: "Introduction to Digital Marketing",
-      description: "Learn the basics of digital marketing for your MSME",
-      type: "course",
-      content: "Digital marketing fundamentals course content...",
-      category: "Marketing",
-      author: "Digital Marketing Expert",
-      thumbnail: "https://example.com/thumbnail1.jpg",
-      duration: 60,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    this.createLearningResource({
-      title: "Understanding GST for Small Businesses",
-      description: "A comprehensive guide to GST compliance",
-      type: "blog",
-      content: "GST guide content...",
-      category: "Finance",
-      author: "Tax Expert",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+  async getSession(sessionId: string): Promise<session.Session | null> {
+    return new Promise((resolve, reject) => {
+      this.sessionStore.get(sessionId, (error, session) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(session || null);
+        }
+      });
     });
   }
 
@@ -294,6 +241,72 @@ export class MemStorage implements IStorage {
     const resource = { ...insertResource, id };
     this.learningResources.set(id, resource);
     return resource;
+  }
+  private async initializeAdmin() {
+    const hashedPassword = await hashInitialPassword("admin123");
+    this.createUser({
+      username: "admin",
+      password: hashedPassword,
+      businessName: "ZarooriBazaar Admin",
+      type: "Platform Administrator",
+      description: "Main administrator of ZarooriBazaar platform",
+      isAdmin: true,
+      isFinancialInstitution: false,
+      creditScore: null,
+      gstNumber: null,
+      gstStatus: null,
+      contactInfo: {
+        email: "admin@zooribazaar.com"
+      }
+    });
+  }
+
+  private async initializeFinancialInstitution() {
+    const hashedPassword = await hashInitialPassword("bank123");
+    this.createUser({
+      username: "bank",
+      password: hashedPassword,
+      businessName: "MSME Finance Bank",
+      type: "Financial Institution",
+      description: "Leading provider of MSME loans and financial services",
+      isAdmin: false,
+      isFinancialInstitution: true,
+      creditScore: null,
+      gstNumber: null,
+      gstStatus: null,
+      contactInfo: {
+        email: "loans@msmefinance.com",
+        phone: "1800-MSME-LOAN",
+        address: "Financial District, Mumbai"
+      }
+    });
+  }
+
+  private async initializeLearningResources() {
+    // Add some initial learning resources
+    this.createLearningResource({
+      title: "Introduction to Digital Marketing",
+      description: "Learn the basics of digital marketing for your MSME",
+      type: "course",
+      content: "Digital marketing fundamentals course content...",
+      category: "Marketing",
+      author: "Digital Marketing Expert",
+      thumbnail: "https://example.com/thumbnail1.jpg",
+      duration: 60,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    this.createLearningResource({
+      title: "Understanding GST for Small Businesses",
+      description: "A comprehensive guide to GST compliance",
+      type: "blog",
+      content: "GST guide content...",
+      category: "Finance",
+      author: "Tax Expert",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
   }
 }
 

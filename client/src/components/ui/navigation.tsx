@@ -77,6 +77,13 @@ export default function Navigation() {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
+              <Link href="/chat">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Chat
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
               <Link href="/profile">
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Profile

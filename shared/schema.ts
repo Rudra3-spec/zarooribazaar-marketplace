@@ -34,9 +34,10 @@ export const products = pgTable("products", {
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
   fromUserId: integer("from_user_id").notNull(),
-  toUserId: integer("to_user_id").notNull(),
+  toUserId: integer("to_user_id"),
   content: text("content").notNull(),
   timestamp: text("timestamp").notNull(),
+  isAiMessage: boolean("is_ai_message").notNull().default(false),
 });
 
 export const loanApplications = pgTable("loan_applications", {
