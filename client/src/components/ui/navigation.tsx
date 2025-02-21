@@ -42,6 +42,20 @@ export default function Navigation() {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
+              <Link href="/bulk-orders">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Bulk Orders
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href="/community">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Community
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
               <Link href="/financing">
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Financing
