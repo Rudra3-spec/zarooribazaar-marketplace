@@ -1,0 +1,78 @@
+##### 12 key features for ZarooriBazaar, including GST registration and AI chatbots:
+
+1. MSME Directory & Business Profiles
+
+Allow businesses to create profiles with company details, services, and contact info.
+Allows MSME’s to create an account for a digital platform.
+
+
+2. Product Listing & Online Marketplace
+
+Enable MSMEs to list and sell products with images, descriptions, and pricing.
+Also provide a platform for selling and purchasing of desired products.
+
+
+3. B2B Networking & Collaboration Hub
+
+Let MSMEs find suppliers, partners, and service providers within the platform.
+Provide Connectivity.
+
+
+4. Direct Messaging & Chat System
+
+Secure chat feature for buyers and sellers to communicate and negotiate deals.
+For a better communication among buyers and sellers.
+
+
+5. AI-Powered Chatbot for Support
+
+Automate customer support, answer FAQs, and assist businesses in finding services.
+Also help with product recommendations and business connections.
+
+
+
+6. Bulk Order & Wholesale Deals
+
+Special section for businesses to place bulk orders at discounted rates.
+Based on the usage and desired needs different MSME’s can connect to each other in this platform.
+
+
+
+
+7. Digital Marketing & Promotion Services
+
+Paid advertisements, featured listings, and SEO tools for MSMEs to increase visibility.
+Collaborate with MSME’s PR and help in order to promote and advertisement.
+
+
+8. Logistics & Delivery Support
+
+Integrate courier services for easy shipping and order tracking.
+Provides real time tracking and contact with the delivery.
+
+
+9. MSME Learning & Resource Center
+
+Offer blogs, videos, and courses on business growth, government schemes, and digital marketing.
+
+
+
+
+
+
+
+10. Financing & Business Loan Assistance
+
+Partner with financial institutions to offer loans, grants, and MSME subsidies.
+Those institutions that can provide loans will be allowed to connect with the MSME’s and grant loans based on their credit score.
+
+
+11. GST Registration & Compliance Assistance
+
+Help MSMEs with GST registration, tax filing, and compliance guidance.
+
+
+12. Community Forum & Webinars
+
+Create discussion forums, organize networking events, and host business-related webinars.
+Helps in more connections between buyers, sellers and MSME’s.
