@@ -41,8 +41,11 @@ export default function HomePage() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+      {/* Background patterns */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.04),transparent)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMDIwMjAiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0aDR2NGgtNHptMC0xMmg0djRoLTR6bTAtMTJoNHY0aC00em0xMiAxMmg0djRoLTR6bTAtMTJoNHY0aC00em0tMjQgMjRoNHY0aC00em0wLTEyaDR2NGgtNHptMC0xMmg0djRoLTR6bTEyIDBoNHY0aC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-20 pointer-events-none" />
+
       <div className="container py-12 relative">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -74,7 +77,7 @@ export default function HomePage() {
             icon={Building2}
             title="MSME Directory"
             description="Connect with verified MSMEs across India. Build partnerships and expand your network with trusted businesses."
-            href="/msme-directory"
+            href="/directory"
             delay={0.1}
           />
           <FeatureCard
@@ -114,7 +117,12 @@ export default function HomePage() {
           />
         </div>
       </div>
-      {user && <ChatPage autoOpen={false} welcomeMessage="Hi! How can I assist you with ZarooriBazaar today?" />}
+      {user && (
+        <ChatPage 
+          autoOpen={true} 
+          welcomeMessage="👋 Need help exploring ZarooriBazaar? I'm here to assist you! Ask me anything about our services." 
+        />
+      )}
     </div>
   );
 }

@@ -137,7 +137,7 @@ export default function ChatPage({ autoOpen = false, welcomeMessage }: ChatPageP
   return (
     <>
       <Button 
-        className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 p-0 shadow-lg hover:shadow-xl transition-shadow"
+        className="fixed bottom-6 right-6 z-50 rounded-full w-14 h-14 p-0 shadow-lg hover:shadow-xl transition-shadow bg-primary hover:bg-primary/90"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
@@ -146,17 +146,27 @@ export default function ChatPage({ autoOpen = false, welcomeMessage }: ChatPageP
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-96 shadow-2xl rounded-xl overflow-hidden animate-in fade-in slide-in-from-bottom-5">
           {showWelcome && (
-            <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground p-4 text-sm">
-              Hi! 👋 How can I help you today?
-              <button onClick={() => setShowWelcome(false)} className="absolute top-2 right-2 hover:opacity-70">
+            <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground p-4 text-sm animate-in fade-in slide-in-from-top-2">
+              {welcomeMessage}
+              <button 
+                onClick={() => setShowWelcome(false)} 
+                className="absolute top-2 right-2 hover:opacity-70 transition-opacity"
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
           )}
           <Card>
             <CardHeader>
-              <CardTitle>
-                {showAiChat ? "AI Assistant" : selectedUser ? users.find(u => u.id === selectedUser)?.businessName : "Select a chat"}
+              <CardTitle className="flex items-center gap-2">
+                {showAiChat ? (
+                  <>
+                    <Bot className="h-5 w-5 text-primary" />
+                    AI Assistant
+                  </>
+                ) : (
+                  selectedUser ? users.find(u => u.id === selectedUser)?.businessName : "Select a chat"
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
