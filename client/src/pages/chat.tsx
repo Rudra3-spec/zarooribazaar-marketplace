@@ -18,7 +18,8 @@ export default function ChatPage() {
   const [showAiChat, setShowAiChat] = useState(false);
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+const [showWelcome, setShowWelcome] = useState(true);
 
   const { data: messages } = useQuery<Message[]>({
     queryKey: ["/api/messages", user?.id],
@@ -128,6 +129,14 @@ export default function ChatPage() {
 
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-96 shadow-2xl rounded-xl overflow-hidden animate-in fade-in slide-in-from-bottom-5">
+          {showWelcome && (
+            <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground p-4 text-sm">
+              Hi! 👋 How can I help you today?
+              <button onClick={() => setShowWelcome(false)} className="absolute top-2 right-2 hover:opacity-70">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
           <Card>
             <CardHeader>
               <CardTitle>
