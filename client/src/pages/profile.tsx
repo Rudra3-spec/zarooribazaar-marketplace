@@ -65,12 +65,15 @@ export default function Profile() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          id: user.id,
+        }),
         credentials: "include",
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: "Failed to update profile" }));
         throw new Error(errorData.message || "Failed to update profile");
       }
 
@@ -81,6 +84,7 @@ export default function Profile() {
         title: "Success",
         description: "Profile updated successfully",
       });
+      // Invalidate both user queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
     },
@@ -138,7 +142,7 @@ export default function Profile() {
     }
   };
 
-  const { data: products, isLoading: isLoadingProducts } = useQuery<Product[]>({
+  const { data: products } = useQuery<Product[]>({
     queryKey: ["/api/products/user", user?.id],
   });
 
@@ -252,22 +256,16 @@ export default function Profile() {
                 </Button>
               </div>
 
-              {isLoadingProducts ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                </div>
-              ) : (
-                <div className="grid md:grid-cols-3 gap-6">
-                  {products?.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                  {!products?.length && (
-                    <div className="col-span-3 text-center py-8 text-muted-foreground">
-                      No products added yet
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="grid md:grid-cols-3 gap-6">
+                {products?.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+                {!products?.length && (
+                  <div className="col-span-3 text-center py-8 text-muted-foreground">
+                    No products added yet
+                  </div>
+                )}
+              </div>
             </div>
           </TabsContent>
 
