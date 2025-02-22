@@ -13,16 +13,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Mail, Phone, Camera, Package, History } from "lucide-react";
-import { queryClient } from "@/lib/queryClient";
+import { Building2, Mail, Phone, Package, History } from "lucide-react";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Product, UserChangeHistory } from "@shared/schema";
 import ProductCard from "@/components/product-card";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 
 const profileSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
@@ -36,6 +36,29 @@ const profileSchema = z.object({
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
+
+function formatDate(dateString: string): string {
+  try {
+    const date = parseISO(dateString);
+    if (!isValid(date)) {
+      return "Invalid date";
+    }
+    return format(date, "PPP pp");
+  } catch (error) {
+    console.error("Date formatting error:", error);
+    return "Invalid date";
+  }
+}
+
+function renderFieldValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "Not set";
+  }
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
 
 export default function Profile() {
   const { user } = useAuth();
@@ -59,23 +82,7 @@ export default function Profile() {
     mutationFn: async (data: ProfileFormData) => {
       if (!user?.id) throw new Error("User not found");
 
-      const response = await fetch(`/api/users/${user.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Please log in to update your profile");
-        }
-        const error = await response.json();
-        throw new Error(error.message || "Failed to update profile");
-      }
-
+      const response = await apiRequest("PATCH", `/api/users/${user.id}`, data);
       return await response.json();
     },
     onSuccess: () => {
@@ -85,6 +92,7 @@ export default function Profile() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/users", user?.id, "change-history"] });
     },
     onError: (error: Error) => {
       toast({
@@ -99,13 +107,12 @@ export default function Profile() {
     await updateProfileMutation.mutateAsync(data);
   };
 
-  const { data: products } = useQuery<Product[]>({
+  const { data: products, isLoading: isLoadingProducts } = useQuery<Product[]>({
     queryKey: ["/api/products/user", user?.id],
-    enabled: !!user?.id
+    enabled: !!user?.id,
   });
 
-  // Add query for change history
-  const { data: changeHistory } = useQuery<UserChangeHistory[]>({
+  const { data: changeHistory, isLoading: isLoadingHistory } = useQuery<UserChangeHistory[]>({
     queryKey: ["/api/users", user?.id, "change-history"],
     enabled: !!user?.id,
   });
@@ -207,16 +214,20 @@ export default function Profile() {
                 </Button>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-6">
-                {products?.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-                {!products?.length && (
-                  <div className="col-span-3 text-center py-8 text-muted-foreground">
-                    No products added yet
-                  </div>
-                )}
-              </div>
+              {isLoadingProducts ? (
+                <div className="text-center py-8">Loading products...</div>
+              ) : (
+                <div className="grid md:grid-cols-3 gap-6">
+                  {products?.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                  {!products?.length && (
+                    <div className="col-span-3 text-center py-8 text-muted-foreground">
+                      No products added yet
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -336,39 +347,43 @@ export default function Profile() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {changeHistory?.map((change) => (
-                    <div key={change.id} className="border-b pb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-muted-foreground">
-                          {format(new Date(change.timestamp), "PPP pp")}
-                        </span>
-                        <span className="text-sm font-medium capitalize px-2 py-1 bg-primary/10 rounded">
-                          {change.changeType}
-                        </span>
+                {isLoadingHistory ? (
+                  <div className="text-center py-8">Loading history...</div>
+                ) : (
+                  <div className="space-y-6">
+                    {changeHistory?.map((change) => (
+                      <div key={change.id} className="border-b pb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground">
+                            {formatDate(change.timestamp)}
+                          </span>
+                          <span className="text-sm font-medium capitalize px-2 py-1 bg-primary/10 rounded">
+                            {change.changeType}
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium">Changed Fields:</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            {change.changedFields.map((field) => (
+                              <li key={field} className="text-sm">
+                                {field}
+                                <div className="ml-6 text-sm text-muted-foreground">
+                                  <div>Old: {renderFieldValue((change.oldValues as Record<string, unknown>)[field])}</div>
+                                  <div>New: {renderFieldValue((change.newValues as Record<string, unknown>)[field])}</div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium">Changed Fields:</p>
-                        <ul className="list-disc list-inside space-y-1">
-                          {change.changedFields.map((field) => (
-                            <li key={field} className="text-sm">
-                              {field}
-                              <div className="ml-6 text-sm text-muted-foreground">
-                                <div>Old: {JSON.stringify((change.oldValues as Record<string, unknown>)[field])}</div>
-                                <div>New: {JSON.stringify((change.newValues as Record<string, unknown>)[field])}</div>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
+                    ))}
+                    {!changeHistory?.length && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No changes recorded yet
                       </div>
-                    </div>
-                  ))}
-                  {!changeHistory?.length && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No changes recorded yet
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
