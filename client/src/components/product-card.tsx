@@ -14,10 +14,13 @@ type ProductCardProps = {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { toast } = useToast();
-  const { addItem } = useCart();
+  const { addItem, items } = useCart();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [showAddIndicator, setShowAddIndicator] = useState(false);
+  const [addCount, setAddCount] = useState(0);
   const imageUrl = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30";
+
+  // Get current quantity of this product in cart
+  const cartQuantity = items.find(item => item.product.id === product.id)?.quantity || 0;
 
   const discountedPrice = product.discount 
     ? Number(product.price) * (1 - product.discount.percentage / 100)
@@ -25,19 +28,19 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
-    if (showAddIndicator) {
+    if (addCount > 0) {
       timeout = setTimeout(() => {
-        setShowAddIndicator(false);
-      }, 1500); // Increased duration for better visibility
+        setAddCount(0);
+      }, 1500);
     }
     return () => clearTimeout(timeout);
-  }, [showAddIndicator]);
+  }, [addCount]);
 
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
     try {
       addItem(product);
-      setShowAddIndicator(true);
+      setAddCount(prev => prev + 1);
       toast({
         title: "Added to cart",
         description: `${product.name} has been added to your cart.`,
@@ -55,13 +58,6 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="group overflow-hidden relative">
-      {showAddIndicator && (
-        <div className="absolute top-2 right-2 z-50 animate-in zoom-in-75 duration-500 scale-100">
-          <Badge className="bg-green-500 text-white font-bold px-3 py-1 text-sm shadow-lg">
-            +1
-          </Badge>
-        </div>
-      )}
       <CardHeader className="p-0">
         <AspectRatio ratio={4/3}>
           <img
@@ -126,12 +122,26 @@ export default function ProductCard({ product }: ProductCardProps) {
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <Button 
-          className="w-full" 
+          className="w-full relative" 
           onClick={handleAddToCart}
           disabled={isAddingToCart || (product.quantity === 0)}
         >
           <ShoppingCart className="mr-2 h-4 w-4" />
-          {product.quantity === 0 ? "Out of Stock" : (isAddingToCart ? "Adding..." : "Add to Cart")}
+          {product.quantity === 0 ? "Out of Stock" : (
+            <>
+              {isAddingToCart ? "Adding..." : "Add to Cart"}
+              {cartQuantity > 0 && !isAddingToCart && (
+                <span className="ml-2 px-2 py-0.5 text-xs bg-white/20 rounded-full">
+                  {cartQuantity}
+                </span>
+              )}
+              {addCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm animate-in zoom-in-75 duration-300">
+                  +{addCount}
+                </span>
+              )}
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>
