@@ -28,7 +28,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     if (showAddIndicator) {
       timeout = setTimeout(() => {
         setShowAddIndicator(false);
-      }, 1000);
+      }, 1500); // Increased duration for better visibility
     }
     return () => clearTimeout(timeout);
   }, [showAddIndicator]);
@@ -56,8 +56,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="group overflow-hidden relative">
       {showAddIndicator && (
-        <div className="absolute top-2 right-2 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
-          <Badge className="bg-primary text-primary-foreground">+1</Badge>
+        <div className="absolute top-2 right-2 z-50 animate-in zoom-in-75 duration-500 scale-100">
+          <Badge className="bg-green-500 text-white font-bold px-3 py-1 text-sm shadow-lg">
+            +1
+          </Badge>
         </div>
       )}
       <CardHeader className="p-0">
