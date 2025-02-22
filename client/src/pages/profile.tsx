@@ -41,6 +41,7 @@ import {
   BarChart,
   Megaphone,
 } from "lucide-react";
+import { Instagram, Facebook, Twitter, Linkedin } from "lucide-react";
 
 // Product schema from shared schema, extend for form validation
 const productFormSchema = insertProductSchema.extend({
@@ -62,6 +63,12 @@ const profileSchema = z.object({
     phone: z.string().optional(),
     address: z.string().optional(),
   }),
+  socialMedia: z.object({
+    instagram: z.string().optional(),
+    facebook: z.string().optional(),
+    twitter: z.string().optional(),
+    linkedin: z.string().optional(),
+  }),
   avatar: z.string().optional(),
 });
 
@@ -82,6 +89,12 @@ export default function Profile() {
         email: user?.contactInfo?.email || "",
         phone: user?.contactInfo?.phone || "",
         address: user?.contactInfo?.address || "",
+      },
+      socialMedia: {
+        instagram: user?.socialMedia?.instagram || "",
+        facebook: user?.socialMedia?.facebook || "",
+        twitter: user?.socialMedia?.twitter || "",
+        linkedin: user?.socialMedia?.linkedin || "",
       },
       avatar: user?.avatar || "",
     },
@@ -240,7 +253,6 @@ export default function Profile() {
   });
 
   const promotions = []; // Placeholder data
-
 
   if (!user) {
     return (
@@ -467,6 +479,68 @@ export default function Profile() {
                   )}
                 </CardContent>
               </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link className="h-5 w-5" />
+                    Social Media
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {form.getValues("socialMedia.instagram") && (
+                    <div className="flex items-center gap-2">
+                      <Instagram className="h-4 w-4 text-muted-foreground" />
+                      <a
+                        href={`https://instagram.com/${form.getValues("socialMedia.instagram")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        @{form.getValues("socialMedia.instagram")}
+                      </a>
+                    </div>
+                  )}
+                  {form.getValues("socialMedia.facebook") && (
+                    <div className="flex items-center gap-2">
+                      <Facebook className="h-4 w-4 text-muted-foreground" />
+                      <a
+                        href={`https://facebook.com/${form.getValues("socialMedia.facebook")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        {form.getValues("socialMedia.facebook")}
+                      </a>
+                    </div>
+                  )}
+                  {form.getValues("socialMedia.twitter") && (
+                    <div className="flex items-center gap-2">
+                      <Twitter className="h-4 w-4 text-muted-foreground" />
+                      <a
+                        href={`https://twitter.com/${form.getValues("socialMedia.twitter")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        @{form.getValues("socialMedia.twitter")}
+                      </a>
+                    </div>
+                  )}
+                  {form.getValues("socialMedia.linkedin") && (
+                    <div className="flex items-center gap-2">
+                      <Linkedin className="h-4 w-4 text-muted-foreground" />
+                      <a
+                        href={`https://linkedin.com/in/${form.getValues("socialMedia.linkedin")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        {form.getValues("socialMedia.linkedin")}
+                      </a>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
@@ -683,6 +757,79 @@ export default function Profile() {
                         </FormItem>
                       )}
                     />
+                    <Separator />
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-medium">Social Media</h3>
+                      <div className="grid gap-4">
+                        <FormField
+                          control={form.control}
+                          name="socialMedia.instagram"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Instagram Username</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Instagram className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                                  <Input {...field} className="pl-10" placeholder="username" />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="socialMedia.facebook"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Facebook Username</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Facebook className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                                  <Input {...field} className="pl-10" placeholder="username" />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="socialMedia.twitter"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Twitter Username</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Twitter className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                                  <Input {...field} className="pl-10" placeholder="username" />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="socialMedia.linkedin"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>LinkedIn Username</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Linkedin className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                                  <Input {...field} className="pl-10" placeholder="username" />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
 
                     <Button
                       type="submit"
