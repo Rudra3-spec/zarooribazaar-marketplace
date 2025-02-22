@@ -20,43 +20,33 @@ export function setupWebSocket(server: Server) {
   const wss = new WebSocketServer({ server, path: '/ws' });
 
   wss.on('connection', async (ws: WebSocketWithAuth, req) => {
-    console.log('WebSocket connection attempt'); // Debug log
-
     // Get session ID from the cookie
     const cookie = req.headers.cookie;
     if (!cookie) {
-      console.log('No cookie found in WebSocket request'); // Debug log
       ws.close();
       return;
     }
 
     try {
-      const sessionMatch = cookie.match(/connect\.sid=s%3A([^.]+)\./);
+      const sessionMatch = cookie.match(/connect\.sid=([^;]+)/);
       if (!sessionMatch) {
-        console.log('No valid session ID found in cookie'); // Debug log
         ws.close();
         return;
       }
 
       const sessionId = decodeURIComponent(sessionMatch[1]);
-      console.log('Found session ID:', sessionId); // Debug log
-
       const session = await storage.getSession(sessionId);
-      console.log('Session data:', session); // Debug log
 
       if (!session?.passport?.user) {
-        console.log('No authenticated user found in session'); // Debug log
         ws.close();
         return;
       }
 
       ws.userId = session.passport.user;
-      console.log('WebSocket authenticated for user:', ws.userId); // Debug log
 
       ws.on('message', async (message: string) => {
         try {
           const data = JSON.parse(message.toString());
-          console.log('Received WebSocket message:', data); // Debug log
 
           if (data.type === 'ai_message') {
             // Handle AI chatbot messages
@@ -72,7 +62,7 @@ export function setupWebSocket(server: Server) {
             broadcastMessage(wss, data, ws.userId);
           }
         } catch (error) {
-          console.error('Error processing WebSocket message:', error);
+          console.error('Error processing message:', error);
         }
       });
 
@@ -80,12 +70,6 @@ export function setupWebSocket(server: Server) {
         console.error('WebSocket error:', error);
         ws.close();
       });
-
-      // Send initial connection success message
-      ws.send(JSON.stringify({
-        type: 'connection_status',
-        content: 'Connected successfully',
-      }));
 
     } catch (error) {
       console.error('WebSocket connection error:', error);

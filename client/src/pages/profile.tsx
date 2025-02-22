@@ -121,8 +121,6 @@ export default function Profile() {
 
   const addProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      console.log("Submitting product data:", data); // Debug log
-
       const response = await fetch("/api/products", {
         method: "POST",
         headers: {
@@ -132,17 +130,12 @@ export default function Profile() {
         credentials: "include",
       });
 
-      console.log("Response status:", response.status); // Debug log
-
       if (!response.ok) {
         const error = await response.json();
-        console.error("Product creation error:", error); // Debug log
         throw new Error(error.message || "Failed to add product");
       }
 
-      const result = await response.json();
-      console.log("Product created successfully:", result); // Debug log
-      return result;
+      return await response.json();
     },
     onSuccess: () => {
       toast({
@@ -153,7 +146,6 @@ export default function Profile() {
       productForm.reset();
     },
     onError: (error: Error) => {
-      console.error("Product mutation error:", error); // Debug log
       toast({
         title: "Error",
         description: error.message,
@@ -162,13 +154,12 @@ export default function Profile() {
     },
   });
 
+  const onSubmit = async (data: ProfileFormData) => {
+    await updateProfileMutation.mutateAsync(data);
+  };
+
   const onAddProduct = async (data: ProductFormData) => {
-    console.log("onAddProduct called with data:", data); // Debug log
-    try {
-      await addProductMutation.mutateAsync(data);
-    } catch (error) {
-      console.error("Error in onAddProduct:", error); // Debug log
-    }
+    await addProductMutation.mutateAsync(data);
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

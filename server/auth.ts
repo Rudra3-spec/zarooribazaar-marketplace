@@ -50,48 +50,34 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
-        console.log("Login attempt for username:", username); // Debug log
         const user = await storage.getUserByUsername(username);
         if (!user || !(await comparePasswords(password, user.password))) {
-          console.log("Login failed: Invalid credentials"); // Debug log
           return done(null, false);
         }
-        console.log("Login successful for user:", user.id); // Debug log
         return done(null, user);
       } catch (error) {
-        console.error("Login error:", error); // Debug log
         return done(error);
       }
     }),
   );
 
-  passport.serializeUser((user, done) => {
-    console.log("Serializing user:", user.id); // Debug log
-    done(null, user.id);
-  });
-
+  passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id: number, done) => {
     try {
-      console.log("Deserializing user:", id); // Debug log
       const user = await storage.getUser(id);
       if (!user) {
-        console.log("Deserialization failed: User not found"); // Debug log
         return done(new Error('User not found'));
       }
-      console.log("Deserialization successful"); // Debug log
       done(null, user);
     } catch (error) {
-      console.error("Deserialization error:", error); // Debug log
       done(error);
     }
   });
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      console.log("Registration attempt:", req.body.username); // Debug log
       const existingUser = await storage.getUserByUsername(req.body.username);
       if (existingUser) {
-        console.log("Registration failed: Username exists"); // Debug log
         return res.status(400).json({ error: "Username already exists" });
       }
 
@@ -100,58 +86,39 @@ export function setupAuth(app: Express) {
         password: await hashPassword(req.body.password),
       });
 
-      console.log("User registered successfully:", user.id); // Debug log
       req.login(user, (err) => {
         if (err) return next(err);
         res.status(201).json(user);
       });
     } catch (error) {
-      console.error("Registration error:", error); // Debug log
       next(error);
     }
   });
 
   app.post("/api/login", (req, res, next) => {
-    console.log("Login request received"); // Debug log
-    passport.authenticate("local", (err: Error | null, user?: Express.User) => {
-      if (err) {
-        console.error("Authentication error:", err); // Debug log
-        return next(err);
-      }
+    passport.authenticate("local", (err, user, info) => {
+      if (err) return next(err);
       if (!user) {
-        console.log("Authentication failed: No user"); // Debug log
         return res.status(401).json({ error: "Invalid credentials" });
       }
       req.login(user, (err) => {
-        if (err) {
-          console.error("Login error:", err); // Debug log
-          return next(err);
-        }
-        console.log("User logged in successfully:", user.id); // Debug log
+        if (err) return next(err);
         res.json(user);
       });
     })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {
-    const userId = req.user?.id;
-    console.log("Logout request for user:", userId); // Debug log
     req.logout((err) => {
-      if (err) {
-        console.error("Logout error:", err); // Debug log
-        return next(err);
-      }
-      console.log("User logged out successfully:", userId); // Debug log
+      if (err) return next(err);
       res.sendStatus(200);
     });
   });
 
   app.get("/api/user", (req, res) => {
-    console.log("Current user request. Authenticated:", req.isAuthenticated()); // Debug log
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: "Not authenticated" });
     }
-    console.log("Returning user data for:", req.user?.id); // Debug log
     res.json(req.user);
   });
 }

@@ -20,30 +20,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/products", async (req, res) => {
-    console.log("Received product creation request:", req.body); // Debug log
-
-    if (!req.user) {
-      console.log("Unauthorized request - no user in session"); // Debug log
-      return res.sendStatus(401);
-    }
-
     const parsed = insertProductSchema.safeParse(req.body);
     if (!parsed.success) {
-      console.error("Product validation error:", parsed.error); // Debug log
       return res.status(400).json(parsed.error);
     }
-
-    try {
-      const product = await storage.createProduct({
-        ...parsed.data,
-        userId: req.user.id
-      });
-      console.log("Product created successfully:", product); // Debug log
-      res.status(201).json(product);
-    } catch (error) {
-      console.error("Error creating product:", error); // Debug log
-      res.status(500).json({ error: "Failed to create product" });
-    }
+    const product = await storage.createProduct(parsed.data);
+    res.status(201).json(product);
   });
 
   // Business Matching Routes
