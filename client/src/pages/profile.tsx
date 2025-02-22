@@ -16,7 +16,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Mail, Phone, Camera, Package } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -55,13 +55,23 @@ export default function Profile() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof profileSchema>) => {
-      if (!user?.id) throw new Error('User not found');
-      const response = await apiRequest('PATCH', `/api/users/${user.id}`, data);
+    mutationFn: async (values: z.infer<typeof profileSchema>) => {
+      if (!user?.id) throw new Error("User not found");
+
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+        credentials: "include",
+      });
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || 'Failed to update profile');
+        const error = await response.json().catch(() => ({ message: "Failed to update profile" }));
+        throw new Error(error.message);
       }
+
       return response.json();
     },
     onSuccess: () => {
@@ -69,12 +79,11 @@ export default function Profile() {
         title: "Success",
         description: "Profile updated successfully",
       });
-      // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
     },
     onError: (error: Error) => {
-      console.error('Profile update error:', error);
+      console.error("Profile update error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to update profile",
@@ -91,7 +100,11 @@ export default function Profile() {
     formData.append("avatar", file);
 
     try {
-      const response = await apiRequest('POST', '/api/upload/avatar', formData);
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error("Failed to upload avatar");
 
       const { url } = await response.json();
