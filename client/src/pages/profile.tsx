@@ -389,45 +389,141 @@ export default function Profile() {
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
-                        <Button 
-                          className="w-full h-24 flex flex-col items-center justify-center gap-2" 
-                          variant="outline"
-                          onClick={() => setIsAddProductOpen(true)}
-                        >
-                          <Package className="h-6 w-6" />
-                          <span className="text-sm text-center">Add Product</span>
-                        </Button>
+                        <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              className="w-full h-24 flex flex-col items-center justify-center gap-2"
+                              variant="outline"
+                            >
+                              <Package className="h-6 w-6" />
+                              <span className="text-sm text-center">Add Product</span>
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add New Product</DialogTitle>
+                            </DialogHeader>
+                            <Form {...productForm}>
+                              <form onSubmit={productForm.handleSubmit(onAddProduct)} className="space-y-4">
+                                <FormField
+                                  control={productForm.control}
+                                  name="name"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Product Name</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={productForm.control}
+                                  name="price"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Price</FormLabel>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          {...field}
+                                          onChange={(e) => field.onChange(Number(e.target.value))}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={productForm.control}
+                                  name="category"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Category</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={productForm.control}
+                                  name="location"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Location</FormLabel>
+                                      <FormControl>
+                                        <CityCombobox
+                                          value={field.value}
+                                          onChange={field.onChange}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={productForm.control}
+                                  name="description"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Description</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <Button
+                                  type="submit"
+                                  className="w-full"
+                                  disabled={addProductMutation.isPending}
+                                >
+                                  {addProductMutation.isPending ? "Adding..." : "Add Product"}
+                                </Button>
+                              </form>
+                            </Form>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                       <div>
                         <Link href="/marketing">
-                          <Button 
-                            className="w-full h-24 flex flex-col items-center justify-center gap-2" 
+                          <Button
+                            className="w-full h-24 flex flex-col items-center justify-center gap-2"
                             variant="outline"
                           >
                             <Megaphone className="h-6 w-6" />
-                            <span className="text-sm text-center">Create Promotion</span>
+                            <span className="text-sm text-center">Create<br/>Promotion</span>
                           </Button>
                         </Link>
                       </div>
                       <div>
                         <Link href="/bulk-orders">
-                          <Button 
-                            className="w-full h-24 flex flex-col items-center justify-center gap-2" 
+                          <Button
+                            className="w-full h-24 flex flex-col items-center justify-center gap-2"
                             variant="outline"
                           >
                             <ShoppingBag className="h-6 w-6" />
-                            <span className="text-sm text-center">Bulk Orders</span>
+                            <span className="text-sm text-center">Bulk<br/>Orders</span>
                           </Button>
                         </Link>
                       </div>
                       <div>
                         <Link href="/insights">
-                          <Button 
-                            className="w-full h-24 flex flex-col items-center justify-center gap-2" 
+                          <Button
+                            className="w-full h-24 flex flex-col items-center justify-center gap-2"
                             variant="outline"
                           >
                             <BarChart className="h-6 w-6" />
-                            <span className="text-sm text-center">View Insights</span>
+                            <span className="text-sm text-center">View<br/>Insights</span>
                           </Button>
                         </Link>
                       </div>
