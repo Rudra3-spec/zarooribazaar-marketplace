@@ -35,11 +35,13 @@ const profileSchema = z.object({
   avatarUrl: z.string().optional(),
 });
 
+type ProfileFormData = z.infer<typeof profileSchema>;
+
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof profileSchema>>({
+  const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       businessName: user?.businessName || "",
@@ -55,7 +57,7 @@ export default function Profile() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof profileSchema>) => {
+    mutationFn: async (values: ProfileFormData) => {
       if (!user?.id) throw new Error("User not found");
 
       const response = await fetch(`/api/users/${user.id}`, {
@@ -68,8 +70,8 @@ export default function Profile() {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: "Failed to update profile" }));
-        throw new Error(error.message);
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update profile");
       }
 
       return response.json();
@@ -91,6 +93,14 @@ export default function Profile() {
       });
     },
   });
+
+  const onSubmit = async (data: ProfileFormData) => {
+    try {
+      await updateProfileMutation.mutateAsync(data);
+    } catch (error) {
+      console.error("Profile update error:", error);
+    }
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -121,14 +131,6 @@ export default function Profile() {
         description: "Failed to upload profile picture",
         variant: "destructive",
       });
-    }
-  };
-
-  const onSubmit = async (data: z.infer<typeof profileSchema>) => {
-    try {
-      await updateProfileMutation.mutateAsync(data);
-    } catch (error) {
-      console.error("Profile update error:", error);
     }
   };
 

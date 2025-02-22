@@ -19,15 +19,6 @@ export default function Navigation() {
   return (
     <div className="border-b">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/profile">
-            <Button variant="ghost" className="flex items-center gap-2">
-              <UserCircle className="h-5 w-5" />
-              {user.businessName || 'My Profile'}
-            </Button>
-          </Link>
-        </div>
-
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -75,13 +66,21 @@ export default function Navigation() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <Button 
-          variant="ghost" 
-          onClick={() => logoutMutation.mutate()}
-          disabled={logoutMutation.isPending}
-        >
-          Logout
-        </Button>
+        <div className="flex items-center gap-4">
+          <Link href="/profile">
+            <Button variant="outline" className="flex items-center gap-2">
+              <UserCircle className="h-5 w-5" />
+              {user.businessName || 'My Profile'}
+            </Button>
+          </Link>
+          <Button 
+            variant="ghost" 
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
+          >
+            Logout
+          </Button>
+        </div>
       </div>
     </div>
   );
