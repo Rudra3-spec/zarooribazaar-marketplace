@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, MapPin, Tag, Truck, RefreshCcw } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/hooks/use-cart";
 
 type ProductCardProps = {
   product: Product;
@@ -13,6 +14,7 @@ type ProductCardProps = {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { toast } = useToast();
+  const { addItem } = useCart();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const imageUrl = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30";
 
@@ -23,7 +25,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
     try {
-      // TODO: Implement cart functionality
+      addItem(product);
       toast({
         title: "Added to cart",
         description: `${product.name} has been added to your cart.`,

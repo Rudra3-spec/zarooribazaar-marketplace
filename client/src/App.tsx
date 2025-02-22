@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
+import { CartProvider } from "@/hooks/use-cart";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
@@ -17,6 +18,7 @@ import Learning from "@/pages/learning";
 import BulkOrders from "@/pages/bulk-orders";
 import Community from "@/pages/community";
 import Insights from "@/pages/insights";
+import Cart from "@/pages/cart";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navigation from "./components/ui/navigation";
 
@@ -27,6 +29,7 @@ function Router() {
       <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/directory" component={MsmeDirectory} />
       <ProtectedRoute path="/products" component={ProductListings} />
+      <ProtectedRoute path="/cart" component={Cart} />
       <ProtectedRoute path="/financing" component={Financing} />
       <ProtectedRoute path="/gst-services" component={GstServices} />
       <ProtectedRoute path="/marketing" component={Marketing} />
@@ -45,9 +48,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Navigation />
-        <Router />
-        <Toaster />
+        <CartProvider>
+          <Navigation />
+          <Router />
+          <Toaster />
+        </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
