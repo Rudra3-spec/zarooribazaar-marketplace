@@ -381,15 +381,7 @@ export default function Profile() {
                     <CardTitle>Quick Actions</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button 
-                        className="w-full" 
-                        variant="outline"
-                        onClick={() => setIsAddProductOpen(true)}
-                      >
-                        <Package className="mr-2 h-4 w-4" />
-                        Add Product
-                      </Button>
+                    <div className="grid grid-cols-3 gap-4">
                       <Link href="/marketing">
                         <Button className="w-full" variant="outline">
                           <Megaphone className="mr-2 h-4 w-4" />
