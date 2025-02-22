@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Building2, Package, Users, Banknote, TrendingUp, Truck, FileText, UserPlus, ShoppingCart, Search, ArrowRight, UserCircle } from "lucide-react";
+import { Building2, Package, Users, Banknote, TrendingUp, Truck, FileText, UserPlus, ShoppingCart, Search, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import ChatPage from "./chat";
 import { motion } from "framer-motion";
@@ -44,18 +44,9 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
       {/* Background patterns */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.04),transparent)] pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMDIwMjAiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0aDR2NGgtNHptMC0xMmg0djRoLTR6bTAtMTJoNHY0aC00em0xMiAxMmg0djRoLTR6bTAtMTJoNHY0aC00em0tMjQgMjRoNHY0aC00em0wLTEyaDR2NGgtNHptMC0xMmg0djRoLTR6bTEyIDBoNHY0aC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-20 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMDIwMjAiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM4aDR2NGgtNHptMC0xMmg0djRoLTR6bTAtMTJoNHY0aC00em0xMiAxMmg0djRoLTR6bTAtMTJoNHY0aC00em0tMjQgMjRoNHY0aC00em0wLTEyaDR2NGgtNHptMC0xMmg0djRoLTR6bTEyIDBoNHY0aC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-20 pointer-events-none" />
 
       <div className="container py-12 relative">
-        <div className="flex justify-between items-center mb-8">
-          <Link href="/profile">
-            <Button variant="ghost" className="flex items-center gap-2 text-gray-200 hover:text-primary">
-              <UserCircle className="h-5 w-5" />
-              {user?.businessName || 'My Profile'}
-            </Button>
-          </Link>
-        </div>
-
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

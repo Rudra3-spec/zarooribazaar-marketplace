@@ -70,7 +70,7 @@ export default function Navigation() {
           <Link href="/profile">
             <Button variant="outline" className="flex items-center gap-2">
               <UserCircle className="h-5 w-5" />
-              {user.businessName || 'My Profile'}
+              Profile
             </Button>
           </Link>
           <Button 
