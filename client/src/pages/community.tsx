@@ -23,20 +23,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { z } from "zod";
 
-// Extend the schema to include optional fields with proper validation
 const extendedForumPostSchema = insertForumPostSchema.extend({
-  tags: z.array(z.string()).optional().default([]),
-  views: z.number().optional().default(0),
+  tags: z.array(z.string()).optional(),
+  views: z.number().optional(),
 });
 
 const extendedWebinarSchema = insertWebinarSchema.extend({
-  status: z.enum(["upcoming", "ongoing", "completed"]).optional().default("upcoming"),
+  status: z.string().optional(),
   maxParticipants: z.number().min(5, "Minimum 5 participants required").max(500, "Maximum 500 participants allowed"),
   registrationDeadline: z.string().min(1, "Registration deadline is required"),
 });
-
-type ForumPostFormData = z.infer<typeof extendedForumPostSchema>;
-type WebinarFormData = z.infer<typeof extendedWebinarSchema>;
 
 export default function CommunityPage() {
   const { user } = useAuth();
@@ -51,45 +47,49 @@ export default function CommunityPage() {
     queryKey: ["/api/webinars"],
   });
 
-  const forumPostForm = useForm<ForumPostFormData>({
+  const forumPostForm = useForm({
     resolver: zodResolver(extendedForumPostSchema),
     defaultValues: {
       title: "",
       content: "",
       category: "",
       tags: [],
-      views: 0,
     },
   });
 
-  const webinarForm = useForm<WebinarFormData>({
+  const webinarForm = useForm({
     resolver: zodResolver(extendedWebinarSchema),
     defaultValues: {
       title: "",
       description: "",
-      scheduledAt: new Date().toISOString().slice(0, 16),
+      scheduledAt: "",
       duration: 60,
       maxParticipants: 100,
-      registrationDeadline: new Date().toISOString().slice(0, 16),
-      status: "upcoming",
+      registrationDeadline: "",
     },
   });
 
   const createForumPostMutation = useMutation({
-    mutationFn: async (data: ForumPostFormData) => {
-      const response = await apiRequest("POST", "/api/forum-posts", {
-        ...data,
-        userId: user?.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+    mutationFn: async (data: z.infer<typeof extendedForumPostSchema>) => {
+      try {
+        const postData = {
+          ...data,
+          userId: user?.id,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          views: 0,
+        };
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create post');
+        const response = await apiRequest("POST", "/api/forum-posts", postData);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create post');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Forum post creation error:', error);
+        throw error;
       }
-
-      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -103,27 +103,33 @@ export default function CommunityPage() {
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to create post",
         variant: "destructive",
       });
     },
   });
 
   const createWebinarMutation = useMutation({
-    mutationFn: async (data: WebinarFormData) => {
-      const response = await apiRequest("POST", "/api/webinars", {
-        ...data,
-        hostId: user?.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+    mutationFn: async (data: z.infer<typeof extendedWebinarSchema>) => {
+      try {
+        const webinarData = {
+          ...data,
+          hostId: user?.id,
+          status: 'upcoming',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create webinar');
+        const response = await apiRequest("POST", "/api/webinars", webinarData);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create webinar');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Webinar creation error:', error);
+        throw error;
       }
-
-      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -137,13 +143,13 @@ export default function CommunityPage() {
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to create webinar",
         variant: "destructive",
       });
     },
   });
 
-  const handleForumPostSubmit = async (data: ForumPostFormData) => {
+  const handleForumPostSubmit = async (data: z.infer<typeof extendedForumPostSchema>) => {
     if (!user) {
       toast({
         title: "Error",
@@ -152,10 +158,14 @@ export default function CommunityPage() {
       });
       return;
     }
-    await createForumPostMutation.mutateAsync(data);
+    try {
+      await createForumPostMutation.mutateAsync(data);
+    } catch (error) {
+      console.error('Forum post submission error:', error);
+    }
   };
 
-  const handleWebinarSubmit = async (data: WebinarFormData) => {
+  const handleWebinarSubmit = async (data: z.infer<typeof extendedWebinarSchema>) => {
     if (!user) {
       toast({
         title: "Error",
@@ -164,7 +174,11 @@ export default function CommunityPage() {
       });
       return;
     }
-    await createWebinarMutation.mutateAsync(data);
+    try {
+      await createWebinarMutation.mutateAsync(data);
+    } catch (error) {
+      console.error('Webinar submission error:', error);
+    }
   };
 
   return (
@@ -192,12 +206,9 @@ export default function CommunityPage() {
             <div className="space-x-2">
               <Dialog open={activeDialog === 'post'} onOpenChange={(open) => setActiveDialog(open ? 'post' : null)}>
                 <DialogTrigger asChild>
-                  <Button variant="default" className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    New Post
-                  </Button>
+                  <Button onClick={() => setActiveDialog('post')}>New Post</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Create Forum Post</DialogTitle>
                   </DialogHeader>
@@ -256,12 +267,9 @@ export default function CommunityPage() {
 
               <Dialog open={activeDialog === 'webinar'} onOpenChange={(open) => setActiveDialog(open ? 'webinar' : null)}>
                 <DialogTrigger asChild>
-                  <Button variant="default" className="flex items-center gap-2">
-                    <Video className="h-4 w-4" />
-                    Host Webinar
-                  </Button>
+                  <Button onClick={() => setActiveDialog('webinar')}>Host Webinar</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px]">
+                <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Create Webinar</DialogTitle>
                   </DialogHeader>
