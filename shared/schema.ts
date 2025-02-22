@@ -204,6 +204,16 @@ export const webinarRegistrations = pgTable("webinar_registrations", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const userChangeHistory = pgTable("user_change_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  changedFields: jsonb("changed_fields").$type<string[]>().notNull(),
+  oldValues: jsonb("old_values").notNull(),
+  newValues: jsonb("new_values").notNull(),
+  changeType: text("change_type").notNull(),
+  timestamp: text("timestamp").notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users);
 export const insertProductSchema = createInsertSchema(products);
 export const insertMessageSchema = createInsertSchema(messages);
@@ -218,6 +228,7 @@ export const insertForumPostSchema = createInsertSchema(forumPosts);
 export const insertForumCommentSchema = createInsertSchema(forumComments);
 export const insertWebinarSchema = createInsertSchema(webinars);
 export const insertWebinarRegistrationSchema = createInsertSchema(webinarRegistrations);
+export const insertUserChangeHistorySchema = createInsertSchema(userChangeHistory);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -233,6 +244,7 @@ export type InsertForumPost = z.infer<typeof insertForumPostSchema>;
 export type InsertForumComment = z.infer<typeof insertForumCommentSchema>;
 export type InsertWebinar = z.infer<typeof insertWebinarSchema>;
 export type InsertWebinarRegistration = z.infer<typeof insertWebinarRegistrationSchema>;
+export type InsertUserChangeHistory = z.infer<typeof insertUserChangeHistorySchema>;
 
 export type User = typeof users.$inferSelect;
 export type Product = typeof products.$inferSelect;
@@ -248,3 +260,4 @@ export type ForumPost = typeof forumPosts.$inferSelect;
 export type ForumComment = typeof forumComments.$inferSelect;
 export type Webinar = typeof webinars.$inferSelect;
 export type WebinarRegistration = typeof webinarRegistrations.$inferSelect;
+export type UserChangeHistory = typeof userChangeHistory.$inferSelect;

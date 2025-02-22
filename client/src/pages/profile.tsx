@@ -15,13 +15,14 @@ import {
 } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Mail, Phone, Camera, Package } from "lucide-react";
+import { Building2, Mail, Phone, Camera, Package, History } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Product } from "@shared/schema";
+import { Product, UserChangeHistory } from "@shared/schema";
 import ProductCard from "@/components/product-card";
+import { format } from "date-fns";
 
 const profileSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
@@ -32,7 +33,6 @@ const profileSchema = z.object({
     phone: z.string().optional(),
     address: z.string().optional(),
   }),
-  avatarUrl: z.string().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -52,7 +52,6 @@ export default function Profile() {
         phone: user?.contactInfo?.phone || "",
         address: user?.contactInfo?.address || "",
       },
-      avatarUrl: user?.avatarUrl || "",
     },
   });
 
@@ -70,6 +69,9 @@ export default function Profile() {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Please log in to update your profile");
+        }
         const error = await response.json();
         throw new Error(error.message || "Failed to update profile");
       }
@@ -97,44 +99,15 @@ export default function Profile() {
     await updateProfileMutation.mutateAsync(data);
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    try {
-      const response = await fetch('/api/upload/avatar', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload avatar");
-      }
-
-      const { url } = await response.json();
-      form.setValue("avatarUrl", url);
-
-      toast({
-        title: "Success",
-        description: "Profile picture updated successfully",
-      });
-    } catch (error) {
-      console.error('Avatar upload error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload profile picture",
-        variant: "destructive",
-      });
-    }
-  };
-
   const { data: products } = useQuery<Product[]>({
     queryKey: ["/api/products/user", user?.id],
     enabled: !!user?.id
+  });
+
+  // Add query for change history
+  const { data: changeHistory } = useQuery<UserChangeHistory[]>({
+    queryKey: ["/api/users", user?.id, "change-history"],
+    enabled: !!user?.id,
   });
 
   if (!user) {
@@ -155,22 +128,8 @@ export default function Profile() {
         <div className="flex items-center gap-4 mb-8">
           <div className="relative">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={form.getValues("avatarUrl")} alt={user.businessName} />
               <AvatarFallback>{user.businessName[0]}</AvatarFallback>
             </Avatar>
-            <label
-              htmlFor="avatar-upload"
-              className="absolute bottom-0 right-0 p-2 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
-            >
-              <Camera className="h-4 w-4 text-white" />
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
-            </label>
           </div>
           <div>
             <h1 className="text-3xl font-bold">{user.businessName}</h1>
@@ -183,6 +142,7 @@ export default function Profile() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -363,6 +323,52 @@ export default function Profile() {
                     </Button>
                   </form>
                 </Form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Profile Change History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {changeHistory?.map((change) => (
+                    <div key={change.id} className="border-b pb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(change.timestamp), "PPP pp")}
+                        </span>
+                        <span className="text-sm font-medium capitalize px-2 py-1 bg-primary/10 rounded">
+                          {change.changeType}
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Changed Fields:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          {change.changedFields.map((field) => (
+                            <li key={field} className="text-sm">
+                              {field}
+                              <div className="ml-6 text-sm text-muted-foreground">
+                                <div>Old: {JSON.stringify((change.oldValues as Record<string, unknown>)[field])}</div>
+                                <div>New: {JSON.stringify((change.newValues as Record<string, unknown>)[field])}</div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+                  {!changeHistory?.length && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No changes recorded yet
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

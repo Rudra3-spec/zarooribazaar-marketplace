@@ -1,4 +1,4 @@
-import { User, Product, Message, InsertUser, InsertProduct, InsertMessage, LoanApplication, GstRegistration, InsertLoanApplication, InsertGstRegistration, Promotion, Logistics, LearningResource, InsertPromotion, InsertLogistics, InsertLearningResource, BulkOrder, InsertBulkOrder, WholesaleDeal, InsertWholesaleDeal, ForumPost, InsertForumPost, ForumComment, InsertForumComment, Webinar, InsertWebinar, WebinarRegistration, InsertWebinarRegistration } from "@shared/schema";
+import { User, Product, Message, InsertUser, UserChangeHistory, InsertUserChangeHistory, InsertProduct, InsertMessage, LoanApplication, GstRegistration, InsertLoanApplication, InsertGstRegistration, Promotion, Logistics, LearningResource, InsertPromotion, InsertLogistics, InsertLearningResource, BulkOrder, InsertBulkOrder, WholesaleDeal, InsertWholesaleDeal, ForumPost, InsertForumPost, ForumComment, InsertForumComment, Webinar, InsertWebinar, WebinarRegistration, InsertWebinarRegistration } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes } from "crypto";
@@ -78,6 +78,10 @@ export interface IStorage {
   createWebinarRegistration(registration: InsertWebinarRegistration): Promise<WebinarRegistration>;
   findMatchingBusinesses(userId: number, businessType: string): Promise<User[]>;
   getRecommendedPartners(userId: number): Promise<User[]>;
+
+  // User change history operations
+  createUserChangeHistory(change: InsertUserChangeHistory): Promise<UserChangeHistory>;
+  getUserChangeHistory(userId: number): Promise<UserChangeHistory[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -111,6 +115,8 @@ export class MemStorage implements IStorage {
   private currentForumCommentId: number;
   private currentWebinarId: number;
   private currentWebinarRegistrationId: number;
+  private userChangeHistory: Map<number, UserChangeHistory>;
+  private currentUserChangeHistoryId: number;
 
   constructor() {
     this.users = new Map();
@@ -145,6 +151,8 @@ export class MemStorage implements IStorage {
     this.currentForumCommentId = 1;
     this.currentWebinarId = 1;
     this.currentWebinarRegistrationId = 1;
+    this.userChangeHistory = new Map();
+    this.currentUserChangeHistoryId = 1;
 
     // Create default admin account and financial institution
     this.initializeAdmin();
@@ -535,6 +543,31 @@ export class MemStorage implements IStorage {
       throw new Error("User not found");
     }
 
+    // Track what fields are being changed
+    const changedFields = Object.keys(updates).filter(key => 
+      JSON.stringify(updates[key as keyof User]) !== JSON.stringify(existingUser[key as keyof User])
+    );
+
+    if (changedFields.length > 0) {
+      // Create change history record
+      const oldValues: Partial<User> = {};
+      const newValues: Partial<User> = {};
+
+      changedFields.forEach(field => {
+        oldValues[field as keyof User] = existingUser[field as keyof User];
+        newValues[field as keyof User] = updates[field as keyof User];
+      });
+
+      await this.createUserChangeHistory({
+        userId: id,
+        changedFields,
+        oldValues,
+        newValues,
+        changeType: "update",
+        timestamp: new Date().toISOString()
+      });
+    }
+
     // Merge updates with existing user data
     const updatedUser: User = {
       ...existingUser,
@@ -548,6 +581,22 @@ export class MemStorage implements IStorage {
 
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+
+  async createUserChangeHistory(change: InsertUserChangeHistory): Promise<UserChangeHistory> {
+    const id = this.currentUserChangeHistoryId++;
+    const historyEntry: UserChangeHistory = {
+      ...change,
+      id
+    };
+    this.userChangeHistory.set(id, historyEntry);
+    return historyEntry;
+  }
+
+  async getUserChangeHistory(userId: number): Promise<UserChangeHistory[]> {
+    return Array.from(this.userChangeHistory.values())
+      .filter(history => history.userId === userId)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }
 }
 
