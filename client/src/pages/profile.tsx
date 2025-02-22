@@ -56,35 +56,25 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: z.infer<typeof profileSchema>) => {
-      try {
-        const response = await fetch(`/api/users/${user?.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          throw new Error(errorData?.message || 'Failed to update profile');
-        }
-
-        return await response.json();
-      } catch (error) {
-        console.error('Profile update error:', error);
-        throw error;
+      if (!user?.id) throw new Error('User not found');
+      const response = await apiRequest('PATCH', `/api/users/${user.id}`, data);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Failed to update profile');
       }
+      return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Profile updated successfully",
       });
+      // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
     },
     onError: (error: Error) => {
+      console.error('Profile update error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to update profile",
@@ -101,11 +91,7 @@ export default function Profile() {
     formData.append("avatar", file);
 
     try {
-      const response = await fetch("/api/upload/avatar", {
-        method: 'POST',
-        body: formData,
-      });
-
+      const response = await apiRequest('POST', '/api/upload/avatar', formData);
       if (!response.ok) throw new Error("Failed to upload avatar");
 
       const { url } = await response.json();
@@ -116,6 +102,7 @@ export default function Profile() {
         description: "Profile picture updated successfully",
       });
     } catch (error) {
+      console.error('Avatar upload error:', error);
       toast({
         title: "Error",
         description: "Failed to upload profile picture",
@@ -155,7 +142,7 @@ export default function Profile() {
           <div className="relative">
             <Avatar className="h-24 w-24">
               <AvatarImage src={form.watch("avatarUrl")} alt={user.businessName} />
-              <AvatarFallback>{user.businessName?.[0]}</AvatarFallback>
+              <AvatarFallback>{user.businessName[0]}</AvatarFallback>
             </Avatar>
             <label
               htmlFor="avatar-upload"
@@ -364,7 +351,7 @@ export default function Profile() {
                       className="w-full"
                       disabled={updateProfileMutation.isPending}
                     >
-                      {updateProfileMutation.isPending ? "Updating..." : "Save Changes"}
+                      {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
                     </Button>
                   </form>
                 </Form>
