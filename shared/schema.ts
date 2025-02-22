@@ -2,24 +2,7 @@ import { pgTable, text, serial, integer, jsonb, boolean } from "drizzle-orm/pg-c
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  businessName: text("business_name").notNull(),
-  type: text("type").notNull(),
-  description: text("description"),
-  isAdmin: boolean("is_admin").notNull().default(false),
-  isFinancialInstitution: boolean("is_financial_institution").notNull().default(false),
-  creditScore: integer("credit_score"),
-  gstNumber: text("gst_number"),
-  gstStatus: text("gst_status"),
-  contactInfo: jsonb("contact_info").$type<{
-    email: string;
-    phone?: string;
-    address?: string;
-  }>(),
-});
+// Keep existing tables unchanged...
 
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -28,8 +11,38 @@ export const products = pgTable("products", {
   description: text("description"),
   price: text("price").notNull(),
   category: text("category").notNull(),
+  quantity: integer("quantity").notNull().default(0),
   images: text("images").array(),
+  tags: text("tags").array(),
+  features: text("features").array(),
+  shipping: jsonb("shipping").$type<{
+    policy: string;
+    cost: number;
+    estimatedDays: number;
+  }>(),
+  returnPolicy: text("return_policy"),
+  variants: jsonb("variants").$type<Array<{
+    name: string;
+    price: number;
+    quantity: number;
+  }>>(),
+  discount: jsonb("discount").$type<{
+    percentage: number;
+    validUntil: string;
+  }>(),
+  isFeatured: boolean("is_featured").notNull().default(false),
+  location: text("location"),
+  reviews: jsonb("reviews").$type<Array<{
+    userId: number;
+    rating: number;
+    comment: string;
+    createdAt: string;
+  }>>(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
 });
+
+// Keep other existing tables unchanged...
 
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
@@ -204,8 +217,46 @@ export const webinarRegistrations = pgTable("webinar_registrations", {
   updatedAt: text("updated_at").notNull(),
 });
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  businessName: text("business_name").notNull(),
+  type: text("type").notNull(),
+  description: text("description"),
+  isAdmin: boolean("is_admin").notNull().default(false),
+  isFinancialInstitution: boolean("is_financial_institution").notNull().default(false),
+  creditScore: integer("credit_score"),
+  gstNumber: text("gst_number"),
+  gstStatus: text("gst_status"),
+  contactInfo: jsonb("contact_info").$type<{
+    email: string;
+    phone?: string;
+    address?: string;
+  }>(),
+});
+
 export const insertUserSchema = createInsertSchema(users);
-export const insertProductSchema = createInsertSchema(products);
+export const insertProductSchema = createInsertSchema(products).extend({
+  quantity: z.number().min(0, "Quantity must be 0 or greater"),
+  tags: z.array(z.string()).optional(),
+  features: z.array(z.string()).optional(),
+  shipping: z.object({
+    policy: z.string(),
+    cost: z.number(),
+    estimatedDays: z.number(),
+  }).optional(),
+  returnPolicy: z.string().optional(),
+  variants: z.array(z.object({
+    name: z.string(),
+    price: z.number(),
+    quantity: z.number(),
+  })).optional(),
+  discount: z.object({
+    percentage: z.number(),
+    validUntil: z.string(),
+  }).optional(),
+});
 export const insertMessageSchema = createInsertSchema(messages);
 export const insertLoanApplicationSchema = createInsertSchema(loanApplications);
 export const insertGstRegistrationSchema = createInsertSchema(gstRegistrations);
