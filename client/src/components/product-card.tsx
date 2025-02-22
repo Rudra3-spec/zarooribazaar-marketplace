@@ -4,7 +4,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, MapPin, Tag, Truck, RefreshCcw } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 
@@ -16,16 +16,28 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { toast } = useToast();
   const { addItem } = useCart();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [showAddIndicator, setShowAddIndicator] = useState(false);
   const imageUrl = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30";
 
   const discountedPrice = product.discount 
     ? Number(product.price) * (1 - product.discount.percentage / 100)
     : Number(product.price);
 
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (showAddIndicator) {
+      timeout = setTimeout(() => {
+        setShowAddIndicator(false);
+      }, 1000);
+    }
+    return () => clearTimeout(timeout);
+  }, [showAddIndicator]);
+
   const handleAddToCart = async () => {
     setIsAddingToCart(true);
     try {
       addItem(product);
+      setShowAddIndicator(true);
       toast({
         title: "Added to cart",
         description: `${product.name} has been added to your cart.`,
@@ -42,7 +54,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Card className="group overflow-hidden">
+    <Card className="group overflow-hidden relative">
+      {showAddIndicator && (
+        <div className="absolute top-2 right-2 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+          <Badge className="bg-primary text-primary-foreground">+1</Badge>
+        </div>
+      )}
       <CardHeader className="p-0">
         <AspectRatio ratio={4/3}>
           <img
