@@ -344,6 +344,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(registration);
   });
 
+  app.patch("/api/users/:id", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    if (req.user.id !== parseInt(req.params.id)) return res.sendStatus(403);
+
+    try {
+      const user = await storage.updateUser(parseInt(req.params.id), req.body);
+      res.json(user);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   setupWebSocket(httpServer);
 

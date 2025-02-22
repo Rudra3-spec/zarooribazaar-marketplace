@@ -32,6 +32,7 @@ const profileSchema = z.object({
     phone: z.string().optional(),
     address: z.string().optional(),
   }),
+  avatarUrl: z.string().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -51,6 +52,7 @@ export default function Profile() {
         phone: user?.contactInfo?.phone || "",
         address: user?.contactInfo?.address || "",
       },
+      avatarUrl: user?.avatarUrl || "",
     },
   });
 
@@ -68,7 +70,8 @@ export default function Profile() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update profile");
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update profile");
       }
 
       return await response.json();
@@ -131,6 +134,7 @@ export default function Profile() {
 
   const { data: products } = useQuery<Product[]>({
     queryKey: ["/api/products/user", user?.id],
+    enabled: !!user?.id
   });
 
   if (!user) {
@@ -138,7 +142,7 @@ export default function Profile() {
       <div className="container py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center text-muted-foreground">
-            Loading profile...
+            Please log in to view your profile
           </div>
         </div>
       </div>
@@ -151,7 +155,7 @@ export default function Profile() {
         <div className="flex items-center gap-4 mb-8">
           <div className="relative">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={form.watch("avatarUrl")} alt={user.businessName} />
+              <AvatarImage src={form.getValues("avatarUrl")} alt={user.businessName} />
               <AvatarFallback>{user.businessName[0]}</AvatarFallback>
             </Avatar>
             <label

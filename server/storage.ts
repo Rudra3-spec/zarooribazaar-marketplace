@@ -18,6 +18,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: Partial<User>): Promise<User>;
 
   // Product operations
   getProducts(): Promise<Product[]>;
@@ -527,6 +528,26 @@ export class MemStorage implements IStorage {
       'distributor': ['supplier']
     };
     return complementaryPairs[type1]?.includes(type2) || complementaryPairs[type2]?.includes(type1);
+  }
+  async updateUser(id: number, updates: Partial<User>): Promise<User> {
+    const existingUser = await this.getUser(id);
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+
+    // Merge updates with existing user data
+    const updatedUser: User = {
+      ...existingUser,
+      ...updates,
+      // Ensure nested objects are properly merged
+      contactInfo: updates.contactInfo ? {
+        ...existingUser.contactInfo,
+        ...updates.contactInfo
+      } : existingUser.contactInfo
+    };
+
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
 }
 
