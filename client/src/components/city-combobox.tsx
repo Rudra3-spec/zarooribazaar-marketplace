@@ -75,28 +75,30 @@ export function CityCombobox({ value, onChange }: {
             onValueChange={setSearch}
           />
           <CommandEmpty>No city found.</CommandEmpty>
-          <CommandGroup className="max-h-64 overflow-y-auto">
-            {cities
-              .filter(city => 
-                !search || 
-                city.city.toLowerCase().includes(search.toLowerCase()) ||
-                city.state.toLowerCase().includes(search.toLowerCase())
-              )
-              .map((city) => (
-                <CommandItem
-                  key={city.city}
-                  value={`${city.city}, ${city.state}`}
-                  onSelect={handleSelect}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === `${city.city}, ${city.state}` ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {city.city}, {city.state}
-                </CommandItem>
-              ))}
+          <CommandGroup>
+            <div className="max-h-[200px] overflow-y-auto">
+              {cities
+                .filter(city => 
+                  !search || 
+                  city.city.toLowerCase().includes(search.toLowerCase()) ||
+                  city.state.toLowerCase().includes(search.toLowerCase())
+                )
+                .map((city) => (
+                  <CommandItem
+                    key={city.city}
+                    value={`${city.city}, ${city.state}`}
+                    onSelect={handleSelect}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === `${city.city}, ${city.state}` ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {city.city}, {city.state}
+                  </CommandItem>
+                ))}
+            </div>
           </CommandGroup>
         </Command>
       </PopoverContent>
