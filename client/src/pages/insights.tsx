@@ -1,10 +1,54 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, Users, Package, Activity, AlertCircle } from "lucide-react";
+import { TrendingUp, Users, Package, Activity, AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function InsightsPage() {
+  // Add error handling for data loading
+  const { data: marketData, isLoading, error } = useQuery({
+    queryKey: ["/api/market-insights"],
+    queryFn: () => {
+      // Simulated data for demonstration
+      return Promise.resolve({
+        activeUsers: 2847,
+        listedProducts: 1234,
+        platformActivity: 89,
+        growthTrends: [
+          { month: "Jan", businesses: 400 },
+          { month: "Feb", businesses: 300 },
+          { month: "Mar", businesses: 200 },
+          { month: "Apr", businesses: 278 },
+          { month: "May", businesses: 189 },
+          { month: "Jun", businesses: 239 },
+        ]
+      });
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container py-8">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to load market insights. Please try again later.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-8">
       <div className="max-w-5xl mx-auto">
@@ -31,7 +75,7 @@ export default function InsightsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">2,847</div>
+              <div className="text-2xl font-bold">{marketData?.activeUsers || 0}</div>
               <p className="text-sm text-muted-foreground">Demo data</p>
             </CardContent>
           </Card>
@@ -44,7 +88,7 @@ export default function InsightsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
+              <div className="text-2xl font-bold">{marketData?.listedProducts || 0}</div>
               <p className="text-sm text-muted-foreground">Demo data</p>
             </CardContent>
           </Card>
@@ -57,7 +101,7 @@ export default function InsightsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">89%</div>
+              <div className="text-2xl font-bold">{marketData?.platformActivity || 0}%</div>
               <p className="text-sm text-muted-foreground">Demo data</p>
             </CardContent>
           </Card>
@@ -70,14 +114,7 @@ export default function InsightsPage() {
           <CardContent>
             <div style={{ width: '100%', height: 300 }}>
               <ResponsiveContainer>
-                <LineChart data={[
-                  { month: "Jan", businesses: 400 },
-                  { month: "Feb", businesses: 300 },
-                  { month: "Mar", businesses: 200 },
-                  { month: "Apr", businesses: 278 },
-                  { month: "May", businesses: 189 },
-                  { month: "Jun", businesses: 239 },
-                ]}>
+                <LineChart data={marketData?.growthTrends || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
