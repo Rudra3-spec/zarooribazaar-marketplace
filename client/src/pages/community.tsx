@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea"; // Added for better content input
 import {
   Form,
   FormControl,
@@ -14,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import { ForumPost, Webinar, insertForumPostSchema, insertWebinarSchema } from "@shared/schema";
+import { ForumPost, Webinar, insertForumPostSchema, insertWebinarSchema, type InsertForumPost, type InsertWebinar } from "@shared/schema";
 import { MessageSquare, Users, Calendar, Video } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -35,8 +36,19 @@ export default function CommunityPage() {
   });
 
   const createForumPostMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/forum-posts", data);
+    mutationFn: async (data: InsertForumPost) => {
+      const postData = {
+        ...data,
+        userId: user?.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        views: 0,
+      };
+      const res = await apiRequest("POST", "/api/forum-posts", postData);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create post");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -58,8 +70,19 @@ export default function CommunityPage() {
   });
 
   const createWebinarMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/webinars", data);
+    mutationFn: async (data: InsertWebinar) => {
+      const webinarData = {
+        ...data,
+        hostId: user?.id,
+        status: 'upcoming',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const res = await apiRequest("POST", "/api/webinars", webinarData);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create webinar");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -142,7 +165,7 @@ export default function CommunityPage() {
                           <FormItem>
                             <FormLabel>Title</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} placeholder="Enter post title" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -155,7 +178,7 @@ export default function CommunityPage() {
                           <FormItem>
                             <FormLabel>Content</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Textarea {...field} placeholder="Write your post content" className="min-h-[100px]" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -168,13 +191,19 @@ export default function CommunityPage() {
                           <FormItem>
                             <FormLabel>Category</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} placeholder="e.g., Business Tips, Market Trends" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full">Create Post</Button>
+                      <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={createForumPostMutation.isPending}
+                      >
+                        {createForumPostMutation.isPending ? "Creating..." : "Create Post"}
+                      </Button>
                     </form>
                   </Form>
                 </DialogContent>
@@ -197,7 +226,7 @@ export default function CommunityPage() {
                           <FormItem>
                             <FormLabel>Title</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} placeholder="Enter webinar title" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -210,7 +239,7 @@ export default function CommunityPage() {
                           <FormItem>
                             <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Textarea {...field} placeholder="Describe your webinar" className="min-h-[100px]" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -223,7 +252,11 @@ export default function CommunityPage() {
                           <FormItem>
                             <FormLabel>Date & Time</FormLabel>
                             <FormControl>
-                              <Input type="datetime-local" {...field} />
+                              <Input 
+                                type="datetime-local" 
+                                {...field} 
+                                min={new Date().toISOString().slice(0, 16)}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -236,13 +269,61 @@ export default function CommunityPage() {
                           <FormItem>
                             <FormLabel>Duration (minutes)</FormLabel>
                             <FormControl>
-                              <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
+                              <Input 
+                                type="number" 
+                                {...field} 
+                                onChange={e => field.onChange(parseInt(e.target.value))}
+                                min={15}
+                                max={180}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full">Create Webinar</Button>
+                      <FormField
+                        control={webinarForm.control}
+                        name="maxParticipants"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Maximum Participants</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                {...field} 
+                                onChange={e => field.onChange(parseInt(e.target.value))}
+                                min={5}
+                                max={500}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={webinarForm.control}
+                        name="registrationDeadline"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Registration Deadline</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="datetime-local" 
+                                {...field}
+                                min={new Date().toISOString().slice(0, 16)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={createWebinarMutation.isPending}
+                      >
+                        {createWebinarMutation.isPending ? "Creating..." : "Create Webinar"}
+                      </Button>
                     </form>
                   </Form>
                 </DialogContent>
@@ -254,7 +335,7 @@ export default function CommunityPage() {
             {forumPosts && forumPosts.length > 0 ? (
               <div className="grid gap-4">
                 {forumPosts.map((post) => (
-                  <Card key={post.id}>
+                  <Card key={post.id} className="hover:bg-accent/5 transition-colors">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-4">
                         <div>
@@ -294,7 +375,7 @@ export default function CommunityPage() {
             {webinars && webinars.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-4">
                 {webinars.map((webinar) => (
-                  <Card key={webinar.id}>
+                  <Card key={webinar.id} className="hover:bg-accent/5 transition-colors">
                     <CardContent className="p-4">
                       <div className="mb-4">
                         <h3 className="font-medium text-lg mb-1">{webinar.title}</h3>
@@ -310,7 +391,10 @@ export default function CommunityPage() {
                           <span>{webinar.maxParticipants} max participants</span>
                         </div>
                       </div>
-                      <Button className="w-full" variant={webinar.status === 'upcoming' ? 'default' : 'secondary'}>
+                      <Button 
+                        className="w-full" 
+                        variant={webinar.status === 'upcoming' ? 'default' : 'secondary'}
+                      >
                         {webinar.status === 'upcoming' ? 'Register Now' : 'View Details'}
                       </Button>
                     </CardContent>
