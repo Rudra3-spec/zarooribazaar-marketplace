@@ -32,7 +32,6 @@ const profileSchema = z.object({
     phone: z.string().optional(),
     address: z.string().optional(),
   }),
-  avatarUrl: z.string().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -52,7 +51,6 @@ export default function Profile() {
         phone: user?.contactInfo?.phone || "",
         address: user?.contactInfo?.address || "",
       },
-      avatarUrl: user?.avatarUrl || "",
     },
   });
 
@@ -65,16 +63,12 @@ export default function Profile() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...data,
-          id: user.id,
-        }),
+        body: JSON.stringify(data),
         credentials: "include",
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: "Failed to update profile" }));
-        throw new Error(errorData.message || "Failed to update profile");
+        throw new Error("Failed to update profile");
       }
 
       return await response.json();
@@ -84,27 +78,20 @@ export default function Profile() {
         title: "Success",
         description: "Profile updated successfully",
       });
-      // Invalidate both user queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
     },
     onError: (error: Error) => {
-      console.error("Profile update error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update profile",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = async (data: ProfileFormData) => {
-    try {
-      await updateProfileMutation.mutateAsync(data);
-    } catch (error) {
-      // Error is already handled in mutation's onError
-      console.error("Profile update error:", error);
-    }
+    await updateProfileMutation.mutateAsync(data);
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
