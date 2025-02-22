@@ -17,7 +17,6 @@ import Learning from "@/pages/learning";
 import BulkOrders from "@/pages/bulk-orders";
 import Community from "@/pages/community";
 import Insights from "@/pages/insights";
-import DashboardPage from "@/pages/dashboard";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navigation from "./components/ui/navigation";
 
@@ -25,8 +24,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/auth" component={AuthPage} />
-      <ProtectedRoute path="/" component={DashboardPage} />
-      <ProtectedRoute path="/home" component={HomePage} />
+      <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/directory" component={MsmeDirectory} />
       <ProtectedRoute path="/products" component={ProductListings} />
       <ProtectedRoute path="/financing" component={Financing} />

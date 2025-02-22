@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -31,6 +32,15 @@ import {
 } from "@/components/ui/dialog";
 import { CityCombobox } from "@/components/city-combobox";
 import { useState } from "react";
+import {
+  TrendingUp,
+  Users,
+  MessageSquare,
+  ShoppingBag,
+  FileText,
+  BarChart,
+  Megaphone,
+} from "lucide-react";
 
 // Product schema from shared schema, extend for form validation
 const productFormSchema = insertProductSchema.extend({
@@ -41,6 +51,21 @@ const productFormSchema = insertProductSchema.extend({
 });
 
 type ProductFormData = z.infer<typeof productFormSchema>;
+
+// Add profile schema definition at the top level
+const profileSchema = z.object({
+  businessName: z.string().min(1, "Business name is required"),
+  type: z.string().min(1, "Business type is required"),
+  description: z.string().optional(),
+  contactInfo: z.object({
+    email: z.string().email("Invalid email address"),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+  }),
+  avatar: z.string().optional(),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function Profile() {
   const { user } = useAuth();
@@ -58,7 +83,7 @@ export default function Profile() {
         phone: user?.contactInfo?.phone || "",
         address: user?.contactInfo?.address || "",
       },
-      avatarUrl: user?.avatarUrl || "",
+      avatar: user?.avatar || "",
     },
   });
 
@@ -193,7 +218,7 @@ export default function Profile() {
       }
 
       const { url } = await response.json();
-      form.setValue("avatarUrl", url);
+      form.setValue("avatar", url);
 
       toast({
         title: "Success",
@@ -214,6 +239,9 @@ export default function Profile() {
     enabled: !!user?.id
   });
 
+  const promotions = []; // Placeholder data
+
+
   if (!user) {
     return (
       <div className="container py-8">
@@ -232,8 +260,8 @@ export default function Profile() {
         <div className="flex items-center gap-4 mb-8">
           <div className="relative">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={form.getValues("avatarUrl")} alt={user.businessName} />
-              <AvatarFallback>{user.businessName[0]}</AvatarFallback>
+              <AvatarImage src={form.getValues("avatar")} alt={user?.businessName} />
+              <AvatarFallback>{user?.businessName?.[0]}</AvatarFallback>
             </Avatar>
             <label
               htmlFor="avatar-upload"
@@ -250,17 +278,153 @@ export default function Profile() {
             </label>
           </div>
           <div>
-            <h1 className="text-3xl font-bold">{user.businessName}</h1>
-            <p className="text-muted-foreground">{user.type}</p>
+            <h1 className="text-3xl font-bold">{user?.businessName}</h1>
+            <p className="text-muted-foreground">{user?.type}</p>
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <div className="space-y-6">
+              <div className="grid md:grid-cols-4 gap-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Total Products</p>
+                        <h3 className="text-2xl font-bold">{products?.length || 0}</h3>
+                      </div>
+                      <Package className="h-8 w-8 text-primary opacity-75" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Active Promotions</p>
+                        <h3 className="text-2xl font-bold">{promotions?.length || 0}</h3>
+                      </div>
+                      <Megaphone className="h-8 w-8 text-primary opacity-75" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Profile Views</p>
+                        <h3 className="text-2xl font-bold">128</h3>
+                      </div>
+                      <Users className="h-8 w-8 text-primary opacity-75" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-1">New Messages</p>
+                        <h3 className="text-2xl font-bold">12</h3>
+                      </div>
+                      <MessageSquare className="h-8 w-8 text-primary opacity-75" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {products?.slice(0, 3).map((product) => (
+                        <div
+                          key={product.id}
+                          className="flex items-center justify-between p-2 rounded-lg border"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Package className="h-8 w-8 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">{product.name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                Added recently
+                              </p>
+                            </div>
+                          </div>
+                          <p className="font-medium">₹{product.price}</p>
+                        </div>
+                      ))}
+                      {(!products || products.length === 0) && (
+                        <p className="text-center text-muted-foreground py-4">
+                          No recent activity to show
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button 
+                        className="w-full" 
+                        variant="outline"
+                        onClick={() => setIsAddProductOpen(true)}
+                      >
+                        <Package className="mr-2 h-4 w-4" />
+                        Add Product
+                      </Button>
+                      <Link href="/marketing">
+                        <Button className="w-full" variant="outline">
+                          <Megaphone className="mr-2 h-4 w-4" />
+                          Create Promotion
+                        </Button>
+                      </Link>
+                      <Link href="/bulk-orders">
+                        <Button className="w-full" variant="outline">
+                          <ShoppingBag className="mr-2 h-4 w-4" />
+                          Bulk Orders
+                        </Button>
+                      </Link>
+                      <Link href="/insights">
+                        <Button className="w-full" variant="outline">
+                          <BarChart className="mr-2 h-4 w-4" />
+                          View Insights
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Business Growth</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[200px] flex items-center justify-center border rounded-lg">
+                    <p className="text-muted-foreground">Growth chart will be displayed here</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="overview">
             <div className="grid md:grid-cols-2 gap-6">
@@ -274,11 +438,11 @@ export default function Profile() {
                 <CardContent className="space-y-4">
                   <div>
                     <h4 className="font-medium mb-1">Business Type</h4>
-                    <p className="text-muted-foreground">{user.type}</p>
+                    <p className="text-muted-foreground">{user?.type}</p>
                   </div>
                   <div>
                     <h4 className="font-medium mb-1">Description</h4>
-                    <p className="text-muted-foreground">{user.description}</p>
+                    <p className="text-muted-foreground">{user?.description}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -293,15 +457,15 @@ export default function Profile() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{user.contactInfo?.email}</span>
+                    <span>{user?.contactInfo?.email}</span>
                   </div>
-                  {user.contactInfo?.phone && (
+                  {user?.contactInfo?.phone && (
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-muted-foreground" />
                       <span>{user.contactInfo.phone}</span>
                     </div>
                   )}
-                  {user.contactInfo?.address && (
+                  {user?.contactInfo?.address && (
                     <div>
                       <h4 className="font-medium mb-1">Address</h4>
                       <p className="text-muted-foreground">
@@ -545,17 +709,3 @@ export default function Profile() {
     </div>
   );
 }
-
-const profileSchema = z.object({
-  businessName: z.string().min(1, "Business name is required"),
-  type: z.string().min(1, "Business type is required"),
-  description: z.string().optional(),
-  contactInfo: z.object({
-    email: z.string().email("Invalid email address"),
-    phone: z.string().optional(),
-    address: z.string().optional(),
-  }),
-  avatarUrl: z.string().optional(),
-});
-
-type ProfileFormData = z.infer<typeof profileSchema>;
