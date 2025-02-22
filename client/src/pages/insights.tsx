@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, Users, Package, Activity } from "lucide-react";
 
-// Sample data - In a real app, this would come from your API
+// Sample data
 const marketTrends = [
-  { month: "Jan", users: 400, products: 240, engagement: 140 },
-  { month: "Feb", users: 300, products: 139, engagement: 221 },
-  { month: "Mar", users: 200, products: 980, engagement: 229 },
-  { month: "Apr", users: 278, products: 390, engagement: 200 },
-  { month: "May", users: 189, products: 480, engagement: 218 },
-  { month: "Jun", users: 239, products: 380, engagement: 250 },
+  { month: "Jan", value: 400 },
+  { month: "Feb", value: 300 },
+  { month: "Mar", value: 200 },
+  { month: "Apr", value: 278 },
+  { month: "May", value: 189 },
+  { month: "Jun", value: 239 },
 ];
 
 export default function InsightsPage() {
@@ -67,34 +67,17 @@ export default function InsightsPage() {
 
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Growth Trends</CardTitle>
+            <CardTitle>Market Trends</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer>
                 <LineChart data={marketTrends}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="users" 
-                    stroke="#2563eb" 
-                    name="Users"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="products" 
-                    stroke="#16a34a" 
-                    name="Products"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="engagement" 
-                    stroke="#9333ea" 
-                    name="Engagement"
-                  />
+                  <Line type="monotone" dataKey="value" stroke="#2563eb" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
