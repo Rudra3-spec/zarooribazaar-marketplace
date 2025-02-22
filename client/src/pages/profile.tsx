@@ -30,6 +30,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CityCombobox } from "@/components/city-combobox";
+import { useState } from "react";
 
 // Product schema from shared schema, extend for form validation
 const productFormSchema = insertProductSchema.extend({
@@ -44,6 +45,7 @@ type ProductFormData = z.infer<typeof productFormSchema>;
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -108,6 +110,7 @@ export default function Profile() {
     },
   });
 
+  // Update the mutation function
   const addProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
       const response = await fetch("/api/products", {
@@ -115,7 +118,13 @@ export default function Profile() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...data, userId: user?.id }),
+        body: JSON.stringify({
+          ...data,
+          userId: user?.id,
+          price: Number(data.price),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }),
         credentials: "include",
       });
 
@@ -133,6 +142,7 @@ export default function Profile() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/products/user", user?.id] });
       productForm.reset();
+      setIsAddProductOpen(false);
     },
     onError: (error: Error) => {
       toast({
@@ -148,7 +158,20 @@ export default function Profile() {
   };
 
   const onAddProduct = async (data: ProductFormData) => {
-    await addProductMutation.mutateAsync(data);
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to add products",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await addProductMutation.mutateAsync(data);
+    } catch (error) {
+      console.error("Failed to add product:", error);
+    }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,9 +318,9 @@ export default function Profile() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-semibold">Your Products</h2>
-                <Dialog>
+                <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button onClick={() => setIsAddProductOpen(true)}>
                       <Package className="mr-2 h-4 w-4" />
                       Add Product
                     </Button>
