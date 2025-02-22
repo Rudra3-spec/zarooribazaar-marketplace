@@ -30,25 +30,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-const profileSchema = z.object({
-  businessName: z.string().min(1, "Business name is required"),
-  type: z.string().min(1, "Business type is required"),
-  description: z.string().optional(),
-  contactInfo: z.object({
-    email: z.string().email("Invalid email address"),
-    phone: z.string().optional(),
-    address: z.string().optional(),
-  }),
-  avatarUrl: z.string().optional(),
-});
-
-type ProfileFormData = z.infer<typeof profileSchema>;
-
 // Product schema from shared schema, extend for form validation
 const productFormSchema = insertProductSchema.extend({
   name: z.string().min(1, "Product name is required"),
   price: z.number().min(0, "Price must be positive"),
   category: z.string().min(1, "Category is required"),
+  location: z.string().min(1, "Location is required"),
 });
 
 type ProductFormData = z.infer<typeof productFormSchema>;
@@ -79,6 +66,7 @@ export default function Profile() {
       price: 0,
       category: "",
       description: "",
+      location: "",
     },
   });
 
@@ -367,6 +355,20 @@ export default function Profile() {
 
                         <FormField
                           control={productForm.control}
+                          name="location"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Location</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="Enter product location" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={productForm.control}
                           name="description"
                           render={({ field }) => (
                             <FormItem>
@@ -516,3 +518,17 @@ export default function Profile() {
     </div>
   );
 }
+
+const profileSchema = z.object({
+  businessName: z.string().min(1, "Business name is required"),
+  type: z.string().min(1, "Business type is required"),
+  description: z.string().optional(),
+  contactInfo: z.object({
+    email: z.string().email("Invalid email address"),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+  }),
+  avatarUrl: z.string().optional(),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
