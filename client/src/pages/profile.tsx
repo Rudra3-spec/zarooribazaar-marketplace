@@ -387,42 +387,50 @@ export default function Profile() {
                     <CardTitle>Quick Actions</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <Button 
-                        className="w-full h-24 flex flex-col items-center justify-center gap-2" 
-                        variant="outline"
-                        onClick={() => setIsAddProductOpen(true)}
-                      >
-                        <Package className="h-6 w-6" />
-                        <span className="text-sm">Add Product</span>
-                      </Button>
-                      <Link href="/marketing">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
                         <Button 
                           className="w-full h-24 flex flex-col items-center justify-center gap-2" 
                           variant="outline"
+                          onClick={() => setIsAddProductOpen(true)}
                         >
-                          <Megaphone className="h-6 w-6" />
-                          <span className="text-sm">Create Promotion</span>
+                          <Package className="h-6 w-6" />
+                          <span className="text-sm text-center">Add Product</span>
                         </Button>
-                      </Link>
-                      <Link href="/bulk-orders">
-                        <Button 
-                          className="w-full h-24 flex flex-col items-center justify-center gap-2" 
-                          variant="outline"
-                        >
-                          <ShoppingBag className="h-6 w-6" />
-                          <span className="text-sm">Bulk Orders</span>
-                        </Button>
-                      </Link>
-                      <Link href="/insights">
-                        <Button 
-                          className="w-full h-24 flex flex-col items-center justify-center gap-2" 
-                          variant="outline"
-                        >
-                          <BarChart className="h-6 w-6" />
-                          <span className="text-sm">View Insights</span>
-                        </Button>
-                      </Link>
+                      </div>
+                      <div>
+                        <Link href="/marketing">
+                          <Button 
+                            className="w-full h-24 flex flex-col items-center justify-center gap-2" 
+                            variant="outline"
+                          >
+                            <Megaphone className="h-6 w-6" />
+                            <span className="text-sm text-center">Create Promotion</span>
+                          </Button>
+                        </Link>
+                      </div>
+                      <div>
+                        <Link href="/bulk-orders">
+                          <Button 
+                            className="w-full h-24 flex flex-col items-center justify-center gap-2" 
+                            variant="outline"
+                          >
+                            <ShoppingBag className="h-6 w-6" />
+                            <span className="text-sm text-center">Bulk Orders</span>
+                          </Button>
+                        </Link>
+                      </div>
+                      <div>
+                        <Link href="/insights">
+                          <Button 
+                            className="w-full h-24 flex flex-col items-center justify-center gap-2" 
+                            variant="outline"
+                          >
+                            <BarChart className="h-6 w-6" />
+                            <span className="text-sm text-center">View Insights</span>
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
