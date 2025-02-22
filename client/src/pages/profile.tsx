@@ -22,14 +22,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Product } from "@shared/schema";
 import ProductCard from "@/components/product-card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import ProductForm from "@/components/product-form";
 
 const profileSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
   type: z.string().min(1, "Business type is required"),
   description: z.string().optional(),
-  avatarUrl: z.string().optional(),
   contactInfo: z.object({
     email: z.string().email("Invalid email address"),
     phone: z.string().optional(),
@@ -49,7 +46,6 @@ export default function Profile() {
       businessName: user?.businessName || "",
       type: user?.type || "",
       description: user?.description || "",
-      avatarUrl: user?.avatarUrl || "", // Added avatarUrl to defaultValues
       contactInfo: {
         email: user?.contactInfo?.email || "",
         phone: user?.contactInfo?.phone || "",
@@ -241,57 +237,15 @@ export default function Profile() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-semibold">Your Products</h2>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Package className="mr-2 h-4 w-4" />
-                      Add Product
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Add New Product</DialogTitle>
-                    </DialogHeader>
-                    <ProductForm />
-                  </DialogContent>
-                </Dialog>
+                <Button>
+                  <Package className="mr-2 h-4 w-4" />
+                  Add Product
+                </Button>
               </div>
 
               <div className="grid md:grid-cols-3 gap-6">
                 {products?.map((product) => (
-                  <Dialog key={product.id}>
-                    <Card>
-                      <CardContent className="p-6">
-                        {product.imageUrl && (
-                          <div className="aspect-square mb-4 overflow-hidden rounded-lg">
-                            <img
-                              src={product.imageUrl}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <h3 className="font-medium mb-2">{product.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          {product.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">₹{product.price}</span>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              Edit
-                            </Button>
-                          </DialogTrigger>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Edit Product</DialogTitle>
-                      </DialogHeader>
-                      <ProductForm initialData={product} />
-                    </DialogContent>
-                  </Dialog>
+                  <ProductCard key={product.id} product={product} />
                 ))}
                 {!products?.length && (
                   <div className="col-span-3 text-center py-8 text-muted-foreground">

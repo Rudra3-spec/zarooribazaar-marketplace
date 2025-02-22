@@ -1,54 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, Users, Package, Activity, AlertCircle, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { TrendingUp, Users, Package, Activity } from "lucide-react";
+
+// Sample data - In a real app, this would come from your API
+const marketTrends = [
+  { month: "Jan", users: 400, products: 240, engagement: 140 },
+  { month: "Feb", users: 300, products: 139, engagement: 221 },
+  { month: "Mar", users: 200, products: 980, engagement: 229 },
+  { month: "Apr", users: 278, products: 390, engagement: 200 },
+  { month: "May", users: 189, products: 480, engagement: 218 },
+  { month: "Jun", users: 239, products: 380, engagement: 250 },
+];
 
 export default function InsightsPage() {
-  // Add error handling for data loading
-  const { data: marketData, isLoading, error } = useQuery({
-    queryKey: ["/api/market-insights"],
-    queryFn: () => {
-      // Simulated data for demonstration
-      return Promise.resolve({
-        activeUsers: 2847,
-        listedProducts: 1234,
-        platformActivity: 89,
-        growthTrends: [
-          { month: "Jan", businesses: 400 },
-          { month: "Feb", businesses: 300 },
-          { month: "Mar", businesses: 200 },
-          { month: "Apr", businesses: 278 },
-          { month: "May", businesses: 189 },
-          { month: "Jun", businesses: 239 },
-        ]
-      });
-    }
-  });
-
-  if (isLoading) {
-    return (
-      <div className="container py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container py-8">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Failed to load market insights. Please try again later.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   return (
     <div className="container py-8">
       <div className="max-w-5xl mx-auto">
@@ -59,24 +24,17 @@ export default function InsightsPage() {
           </p>
         </div>
 
-        <Alert className="mb-8">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            This is a demonstration view with placeholder data. In the production version, this will be connected to real-time market analytics.
-          </AlertDescription>
-        </Alert>
-
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" />
-                Active MSMEs
+                Active Users
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{marketData?.activeUsers || 0}</div>
-              <p className="text-sm text-muted-foreground">Demo data</p>
+              <div className="text-2xl font-bold">2,847</div>
+              <p className="text-sm text-muted-foreground">↑ 12% from last month</p>
             </CardContent>
           </Card>
 
@@ -88,8 +46,8 @@ export default function InsightsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{marketData?.listedProducts || 0}</div>
-              <p className="text-sm text-muted-foreground">Demo data</p>
+              <div className="text-2xl font-bold">1,234</div>
+              <p className="text-sm text-muted-foreground">↑ 8% from last month</p>
             </CardContent>
           </Card>
 
@@ -101,25 +59,42 @@ export default function InsightsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{marketData?.platformActivity || 0}%</div>
-              <p className="text-sm text-muted-foreground">Demo data</p>
+              <div className="text-2xl font-bold">89%</div>
+              <p className="text-sm text-muted-foreground">↑ 3% from last month</p>
             </CardContent>
           </Card>
         </div>
 
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Business Growth Trends (Demo)</CardTitle>
+            <CardTitle>Growth Trends</CardTitle>
           </CardHeader>
           <CardContent>
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <LineChart data={marketData?.growthTrends || []}>
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={marketTrends}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="businesses" stroke="#2563eb" name="Registered Businesses" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="users" 
+                    stroke="#2563eb" 
+                    name="Users"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="products" 
+                    stroke="#16a34a" 
+                    name="Products"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="engagement" 
+                    stroke="#9333ea" 
+                    name="Engagement"
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -129,24 +104,24 @@ export default function InsightsPage() {
         <div className="grid md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Popular Business Categories (Demo)</CardTitle>
+              <CardTitle>Top Categories</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span>Manufacturing</span>
+                  <span>Electronics</span>
                   <span className="text-primary font-medium">32%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Services</span>
+                  <span>Textiles</span>
                   <span className="text-primary font-medium">28%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Retail</span>
+                  <span>Food & Beverages</span>
                   <span className="text-primary font-medium">24%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Technology</span>
+                  <span>Handicrafts</span>
                   <span className="text-primary font-medium">16%</span>
                 </div>
               </div>
@@ -155,24 +130,24 @@ export default function InsightsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Regional Distribution (Demo)</CardTitle>
+              <CardTitle>Regional Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span>North Region</span>
+                  <span>North India</span>
                   <span className="text-primary font-medium">35%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>South Region</span>
+                  <span>South India</span>
                   <span className="text-primary font-medium">30%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>West Region</span>
+                  <span>West India</span>
                   <span className="text-primary font-medium">20%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>East Region</span>
+                  <span>East India</span>
                   <span className="text-primary font-medium">15%</span>
                 </div>
               </div>

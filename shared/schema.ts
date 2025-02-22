@@ -9,7 +9,6 @@ export const users = pgTable("users", {
   businessName: text("business_name").notNull(),
   type: text("type").notNull(),
   description: text("description"),
-  avatarUrl: text("avatar_url"),
   isAdmin: boolean("is_admin").notNull().default(false),
   isFinancialInstitution: boolean("is_financial_institution").notNull().default(false),
   creditScore: integer("credit_score"),
@@ -29,7 +28,6 @@ export const products = pgTable("products", {
   description: text("description"),
   price: text("price").notNull(),
   category: text("category").notNull(),
-  imageUrl: text("image_url"),
   images: text("images").array(),
 });
 
@@ -206,14 +204,8 @@ export const webinarRegistrations = pgTable("webinar_registrations", {
   updatedAt: text("updated_at").notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).extend({
-  avatarUrl: z.string().optional(),
-});
-
-export const insertProductSchema = createInsertSchema(products).extend({
-  imageUrl: z.string().optional(),
-});
-
+export const insertUserSchema = createInsertSchema(users);
+export const insertProductSchema = createInsertSchema(products);
 export const insertMessageSchema = createInsertSchema(messages);
 export const insertLoanApplicationSchema = createInsertSchema(loanApplications);
 export const insertGstRegistrationSchema = createInsertSchema(gstRegistrations);
