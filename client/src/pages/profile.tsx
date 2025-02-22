@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -15,42 +15,119 @@ import {
 } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building2, Mail, Phone, Camera } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Product } from "@shared/schema";
 import ProductCard from "@/components/product-card";
-import { Building2, Mail, Package, Phone, Users, ShoppingBag, MessageSquare } from "lucide-react";
-import { User } from "@shared/schema"; // Added import
-import { Message } from "@shared/schema"; // Added import
+import { User } from "@shared/schema";
+import { Message } from "@shared/schema";
 
+const profileSchema = z.object({
+  businessName: z.string().min(1, "Business name is required"),
+  type: z.string().min(1, "Business type is required"),
+  description: z.string().optional(),
+  contactInfo: z.object({
+    email: z.string().email("Invalid email address"),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+  }),
+  avatarUrl: z.string().optional(),
+});
 
 export default function Profile() {
   const { user } = useAuth();
-  const avatarUrl = "https://images.unsplash.com/photo-1544724107-6d5c4caaff30";
-
-  const { data: products } = useQuery<Product[]>({
-    queryKey: ["/api/products/user", user?.id],
-  });
-
-  const { data: businesses } = useQuery<User[]>({ // Updated query
-    queryKey: ["/api/users"],
-    enabled: user?.isAdmin
-  });
-
-  const { data: messages } = useQuery<Message[]>({ // Updated query
-    queryKey: ["/api/messages/all"],
-    enabled: user?.isAdmin
-  });
+  const { toast } = useToast();
 
   const form = useForm({
+    resolver: zodResolver(profileSchema),
     defaultValues: {
       businessName: user?.businessName || "",
       type: user?.type || "",
       description: user?.description || "",
       contactInfo: {
-        email: user?.contactInfo.email || "",
-        phone: user?.contactInfo.phone || "",
-        address: user?.contactInfo.address || "",
+        email: user?.contactInfo?.email || "",
+        phone: user?.contactInfo?.phone || "",
+        address: user?.contactInfo?.address || "",
       },
+      avatarUrl: user?.avatarUrl || "",
     },
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof profileSchema>) => {
+      const response = await apiRequest("PATCH", `/api/users/${user?.id}`, data);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update profile");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const response = await apiRequest("POST", "/api/upload/avatar", formData);
+      if (!response.ok) throw new Error("Failed to upload avatar");
+
+      const { url } = await response.json();
+      form.setValue("avatarUrl", url);
+
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload profile picture",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const onSubmit = async (data: z.infer<typeof profileSchema>) => {
+    try {
+      await updateProfileMutation.mutateAsync(data);
+    } catch (error) {
+      console.error("Profile update error:", error);
+    }
+  };
+
+  const { data: products } = useQuery<Product[]>({
+    queryKey: ["/api/products/user", user?.id],
+  });
+
+  const { data: businesses } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+    enabled: user?.isAdmin
+  });
+
+  const { data: messages } = useQuery<Message[]>({
+    queryKey: ["/api/messages/all"],
+    enabled: user?.isAdmin
   });
 
   return (
@@ -58,8 +135,8 @@ export default function Profile() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={avatarUrl} alt={user?.businessName} />
-            <AvatarFallback>{user?.businessName[0]}</AvatarFallback>
+            <AvatarImage src={form.watch("avatarUrl")} alt={user?.businessName} />
+            <AvatarFallback>{user?.businessName?.[0]}</AvatarFallback>
           </Avatar>
           <div>
             <h1 className="text-3xl font-bold">{user?.businessName}</h1>
@@ -152,7 +229,7 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form className="space-y-6">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
                       control={form.control}
                       name="businessName"
@@ -204,7 +281,7 @@ export default function Profile() {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} type="email" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -218,7 +295,7 @@ export default function Profile() {
                         <FormItem>
                           <FormLabel>Phone</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} type="tel" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -238,8 +315,32 @@ export default function Profile() {
                         </FormItem>
                       )}
                     />
-
-                    <Button type="submit">Save Changes</Button>
+                    <div className="relative">
+                      <Avatar className="h-20 w-20">
+                        <AvatarImage src={form.watch("avatarUrl")} alt={user?.businessName} />
+                        <AvatarFallback>{user?.businessName?.[0]}</AvatarFallback>
+                      </Avatar>
+                      <label
+                        htmlFor="avatar-upload"
+                        className="absolute bottom-0 right-0 p-1 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+                      >
+                        <Camera className="h-4 w-4 text-white" />
+                        <input
+                          id="avatar-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleFileUpload}
+                        />
+                      </label>
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={updateProfileMutation.isPending}
+                    >
+                      {updateProfileMutation.isPending ? "Updating..." : "Save Changes"}
+                    </Button>
                   </form>
                 </Form>
               </CardContent>

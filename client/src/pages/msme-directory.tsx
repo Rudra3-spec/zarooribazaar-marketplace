@@ -1,14 +1,15 @@
-
 import { useQuery } from "@tanstack/react-query";
-import BusinessCard from "@/components/business-card";
 import { User } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Search, UsersIcon } from "lucide-react";
+import { Search, Building2, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
 
 export default function MsmeDirectory() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,16 +18,6 @@ export default function MsmeDirectory() {
 
   const { data: businesses } = useQuery<User[]>({
     queryKey: ["/api/users"],
-  });
-
-  const { data: recommendedPartners } = useQuery<User[]>({
-    queryKey: ["/api/businesses/recommended", user?.id],
-    enabled: !!user,
-  });
-
-  const { data: matchingBusinesses } = useQuery<User[]>({
-    queryKey: ["/api/businesses/matching", user?.id],
-    enabled: !!user,
   });
 
   const filteredBusinesses = businesses?.filter(business => 
@@ -63,55 +54,155 @@ export default function MsmeDirectory() {
         <TabsContent value="all">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredBusinesses?.map((business) => (
-              <BusinessCard
-                key={business.id}
-                business={business}
-                onSelect={() => setSelectedBusiness(business)}
-              />
+              <Card 
+                key={business.id} 
+                className="hover:bg-accent/5 transition-colors cursor-pointer"
+                onClick={() => setSelectedBusiness(business)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={business.avatarUrl} alt={business.businessName} />
+                      <AvatarFallback>{business.businessName[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-medium leading-none mb-2">{business.businessName}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">{business.type}</p>
+                      <div className="space-y-2">
+                        {business.description && (
+                          <p className="text-sm line-clamp-2">{business.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </TabsContent>
 
         <TabsContent value="recommended">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recommendedPartners?.map((business) => (
-              <BusinessCard
-                key={business.id}
-                business={business}
-                onSelect={() => setSelectedBusiness(business)}
-                badge="Recommended Partner"
-              />
+            {filteredBusinesses?.map((business) => (
+              <Card 
+                key={business.id} 
+                className="hover:bg-accent/5 transition-colors cursor-pointer"
+                onClick={() => setSelectedBusiness(business)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={business.avatarUrl} alt={business.businessName} />
+                      <AvatarFallback>{business.businessName[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-medium leading-none mb-2">{business.businessName}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">{business.type}</p>
+                      <div className="space-y-2">
+                        {business.description && (
+                          <p className="text-sm line-clamp-2">{business.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </TabsContent>
 
         <TabsContent value="matching">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {matchingBusinesses?.map((business) => (
-              <BusinessCard
-                key={business.id}
-                business={business}
-                onSelect={() => setSelectedBusiness(business)}
-                badge="Similar Business"
-              />
+            {filteredBusinesses?.map((business) => (
+              <Card 
+                key={business.id} 
+                className="hover:bg-accent/5 transition-colors cursor-pointer"
+                onClick={() => setSelectedBusiness(business)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={business.avatarUrl} alt={business.businessName} />
+                      <AvatarFallback>{business.businessName[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-medium leading-none mb-2">{business.businessName}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">{business.type}</p>
+                      <div className="space-y-2">
+                        {business.description && (
+                          <p className="text-sm line-clamp-2">{business.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </TabsContent>
       </Tabs>
 
       <Dialog open={!!selectedBusiness} onOpenChange={() => setSelectedBusiness(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{selectedBusiness?.businessName}</DialogTitle>
+            <DialogTitle>Business Profile</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <p><strong>Type:</strong> {selectedBusiness?.type}</p>
-            <p><strong>Description:</strong> {selectedBusiness?.description}</p>
-            <Button className="w-full" onClick={() => window.location.href = `/chat?partner=${selectedBusiness?.id}`}>
-              <UsersIcon className="w-4 h-4 mr-2" />
-              Connect & Chat
-            </Button>
-          </div>
+          {selectedBusiness && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={selectedBusiness.avatarUrl} alt={selectedBusiness.businessName} />
+                  <AvatarFallback>{selectedBusiness.businessName[0]}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h2 className="text-2xl font-bold">{selectedBusiness.businessName}</h2>
+                  <Badge variant="secondary" className="mt-1">{selectedBusiness.type}</Badge>
+                </div>
+              </div>
+
+              {selectedBusiness.description && (
+                <div>
+                  <h3 className="font-medium mb-2">About</h3>
+                  <p className="text-muted-foreground">{selectedBusiness.description}</p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <h3 className="font-medium mb-2">Contact Information</h3>
+                {selectedBusiness.contactInfo?.email && (
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span>{selectedBusiness.contactInfo.email}</span>
+                  </div>
+                )}
+                {selectedBusiness.contactInfo?.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span>{selectedBusiness.contactInfo.phone}</span>
+                  </div>
+                )}
+                {selectedBusiness.contactInfo?.address && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span>{selectedBusiness.contactInfo.address}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <Button className="flex-1" asChild>
+                  <Link href={`/chat?partner=${selectedBusiness.id}`}>
+                    Start Chat
+                  </Link>
+                </Button>
+                <Button variant="outline" className="flex-1" asChild>
+                  <Link href={`/business/${selectedBusiness.id}`}>
+                    View Full Profile
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
