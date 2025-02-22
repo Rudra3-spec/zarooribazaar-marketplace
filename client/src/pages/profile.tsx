@@ -43,24 +43,14 @@ import {
 } from "lucide-react";
 import { Instagram, Facebook, Twitter, Linkedin } from "lucide-react";
 
-// Product schema from shared schema, extend for form validation
-const productFormSchema = insertProductSchema.extend({
-  name: z.string().min(1, "Product name is required"),
-  price: z.number().min(0, "Price must be positive"),
-  category: z.string().min(1, "Category is required"),
-  location: z.string().min(1, "Location is required"),
-});
-
-type ProductFormData = z.infer<typeof productFormSchema>;
-
-// Add profile schema definition at the top level
+// Update the profile schema to make fields required
 const profileSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
   type: z.string().min(1, "Business type is required"),
   description: z.string().optional(),
   contactInfo: z.object({
-    email: z.string().email("Invalid email address"),
-    phone: z.string().optional(),
+    email: z.string().email("Invalid email address").min(1, "Email is required"),
+    phone: z.string().min(1, "Phone number is required"),
     address: z.string().optional(),
   }),
   socialMedia: z.object({
@@ -71,6 +61,10 @@ const profileSchema = z.object({
   }),
   avatar: z.string().optional(),
 });
+
+type ProductFormData = z.infer<typeof insertProductSchema>;
+
+// Add profile schema definition at the top level
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
@@ -101,7 +95,7 @@ export default function Profile() {
   });
 
   const productForm = useForm<ProductFormData>({
-    resolver: zodResolver(productFormSchema),
+    resolver: zodResolver(insertProductSchema),
     defaultValues: {
       name: "",
       price: 0,
@@ -393,23 +387,23 @@ export default function Profile() {
                     <CardTitle>Quick Actions</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <Link href="/marketing">
-                        <Button className="w-full" variant="outline">
-                          <Megaphone className="mr-2 h-4 w-4" />
-                          Create Promotion
+                        <Button className="w-full h-full flex flex-col items-center justify-center py-4" variant="outline">
+                          <Megaphone className="h-6 w-6 mb-2" />
+                          <span>Create Promotion</span>
                         </Button>
                       </Link>
                       <Link href="/bulk-orders">
-                        <Button className="w-full" variant="outline">
-                          <ShoppingBag className="mr-2 h-4 w-4" />
-                          Bulk Orders
+                        <Button className="w-full h-full flex flex-col items-center justify-center py-4" variant="outline">
+                          <ShoppingBag className="h-6 w-6 mb-2" />
+                          <span>Bulk Orders</span>
                         </Button>
                       </Link>
                       <Link href="/insights">
-                        <Button className="w-full" variant="outline">
-                          <BarChart className="mr-2 h-4 w-4" />
-                          View Insights
+                        <Button className="w-full h-full flex flex-col items-center justify-center py-4" variant="outline">
+                          <BarChart className="h-6 w-6 mb-2" />
+                          <span>View Insights</span>
                         </Button>
                       </Link>
                     </div>
@@ -677,7 +671,9 @@ export default function Profile() {
                       name="businessName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Business Name</FormLabel>
+                          <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                            Business Name
+                          </FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -691,7 +687,9 @@ export default function Profile() {
                       name="type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Business Type</FormLabel>
+                          <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                            Business Type
+                          </FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -721,7 +719,9 @@ export default function Profile() {
                       name="contactInfo.email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                            Email
+                          </FormLabel>
                           <FormControl>
                             <Input {...field} type="email" />
                           </FormControl>
@@ -735,7 +735,9 @@ export default function Profile() {
                       name="contactInfo.phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Phone</FormLabel>
+                          <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                            Phone
+                          </FormLabel>
                           <FormControl>
                             <Input {...field} type="tel" />
                           </FormControl>
