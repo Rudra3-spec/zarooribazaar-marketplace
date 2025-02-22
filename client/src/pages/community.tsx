@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea"; // Added for better content input
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -15,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import { ForumPost, Webinar, insertForumPostSchema, insertWebinarSchema, type InsertForumPost, type InsertWebinar } from "@shared/schema";
+import { ForumPost, Webinar, insertForumPostSchema, insertWebinarSchema } from "@shared/schema";
 import { MessageSquare, Users, Calendar, Video } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -36,7 +36,7 @@ export default function CommunityPage() {
   });
 
   const createForumPostMutation = useMutation({
-    mutationFn: async (data: InsertForumPost) => {
+    mutationFn: async (data: typeof insertForumPostSchema._type) => {
       const postData = {
         ...data,
         userId: user?.id,
@@ -70,7 +70,7 @@ export default function CommunityPage() {
   });
 
   const createWebinarMutation = useMutation({
-    mutationFn: async (data: InsertWebinar) => {
+    mutationFn: async (data: typeof insertWebinarSchema._type) => {
       const webinarData = {
         ...data,
         hostId: user?.id,
@@ -148,7 +148,7 @@ export default function CommunityPage() {
               </TabsTrigger>
             </TabsList>
             <div className="space-x-2">
-              <Dialog open={activeDialog === 'post'} onOpenChange={() => setActiveDialog(null)}>
+              <Dialog open={activeDialog === 'post'} onOpenChange={(open) => setActiveDialog(open ? 'post' : null)}>
                 <DialogTrigger asChild>
                   <Button onClick={() => setActiveDialog('post')}>New Post</Button>
                 </DialogTrigger>
@@ -209,7 +209,7 @@ export default function CommunityPage() {
                 </DialogContent>
               </Dialog>
 
-              <Dialog open={activeDialog === 'webinar'} onOpenChange={() => setActiveDialog(null)}>
+              <Dialog open={activeDialog === 'webinar'} onOpenChange={(open) => setActiveDialog(open ? 'webinar' : null)}>
                 <DialogTrigger asChild>
                   <Button onClick={() => setActiveDialog('webinar')}>Host Webinar</Button>
                 </DialogTrigger>
@@ -331,7 +331,7 @@ export default function CommunityPage() {
             </div>
           </div>
 
-          <TabsContent value="forum" className="space-y-6">
+          <TabsContent value="forum">
             {forumPosts && forumPosts.length > 0 ? (
               <div className="grid gap-4">
                 {forumPosts.map((post) => (
@@ -371,7 +371,7 @@ export default function CommunityPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="webinars" className="space-y-6">
+          <TabsContent value="webinars">
             {webinars && webinars.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-4">
                 {webinars.map((webinar) => (
