@@ -57,7 +57,7 @@ export default function Profile() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (values: ProfileFormData) => {
+    mutationFn: async (data: ProfileFormData) => {
       if (!user?.id) throw new Error("User not found");
 
       const response = await fetch(`/api/users/${user.id}`, {
@@ -65,16 +65,16 @@ export default function Profile() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(data),
         credentials: "include",
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to update profile");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update profile");
       }
 
-      return response.json();
+      return await response.json();
     },
     onSuccess: () => {
       toast({
@@ -98,6 +98,7 @@ export default function Profile() {
     try {
       await updateProfileMutation.mutateAsync(data);
     } catch (error) {
+      // Error is already handled in mutation's onError
       console.error("Profile update error:", error);
     }
   };
@@ -115,7 +116,10 @@ export default function Profile() {
         body: formData,
         credentials: 'include'
       });
-      if (!response.ok) throw new Error("Failed to upload avatar");
+
+      if (!response.ok) {
+        throw new Error("Failed to upload avatar");
+      }
 
       const { url } = await response.json();
       form.setValue("avatarUrl", url);
