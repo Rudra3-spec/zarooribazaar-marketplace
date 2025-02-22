@@ -356,20 +356,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/users/:id/change-history", async (req, res) => {
-    if (!req.user) return res.sendStatus(401);
-    if (req.user.id !== parseInt(req.params.id) && !req.user.isAdmin) {
-      return res.sendStatus(403);
-    }
-
-    try {
-      const history = await storage.getUserChangeHistory(parseInt(req.params.id));
-      res.json(history);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
   const httpServer = createServer(app);
   setupWebSocket(httpServer);
 

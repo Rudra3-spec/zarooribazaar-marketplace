@@ -13,10 +13,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Mail, Phone, Package } from "lucide-react";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { Building2, Mail, Phone, Camera, Package } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,6 +32,7 @@ const profileSchema = z.object({
     phone: z.string().optional(),
     address: z.string().optional(),
   }),
+  avatarUrl: z.string().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -51,6 +52,7 @@ export default function Profile() {
         phone: user?.contactInfo?.phone || "",
         address: user?.contactInfo?.address || "",
       },
+      avatarUrl: user?.avatarUrl || "",
     },
   });
 
@@ -58,7 +60,20 @@ export default function Profile() {
     mutationFn: async (data: ProfileFormData) => {
       if (!user?.id) throw new Error("User not found");
 
-      const response = await apiRequest("PATCH", `/api/users/${user.id}`, data);
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update profile");
+      }
+
       return await response.json();
     },
     onSuccess: () => {
@@ -82,9 +97,44 @@ export default function Profile() {
     await updateProfileMutation.mutateAsync(data);
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload avatar");
+      }
+
+      const { url } = await response.json();
+      form.setValue("avatarUrl", url);
+
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully",
+      });
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload profile picture",
+        variant: "destructive",
+      });
+    }
+  };
+
   const { data: products } = useQuery<Product[]>({
     queryKey: ["/api/products/user", user?.id],
-    enabled: !!user?.id,
+    enabled: !!user?.id
   });
 
   if (!user) {
@@ -105,8 +155,22 @@ export default function Profile() {
         <div className="flex items-center gap-4 mb-8">
           <div className="relative">
             <Avatar className="h-24 w-24">
+              <AvatarImage src={form.getValues("avatarUrl")} alt={user.businessName} />
               <AvatarFallback>{user.businessName[0]}</AvatarFallback>
             </Avatar>
+            <label
+              htmlFor="avatar-upload"
+              className="absolute bottom-0 right-0 p-2 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+            >
+              <Camera className="h-4 w-4 text-white" />
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </label>
           </div>
           <div>
             <h1 className="text-3xl font-bold">{user.businessName}</h1>

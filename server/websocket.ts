@@ -23,15 +23,13 @@ export function setupWebSocket(server: Server) {
     // Get session ID from the cookie
     const cookie = req.headers.cookie;
     if (!cookie) {
-      console.log('WebSocket connection rejected: No cookie found');
       ws.close();
       return;
     }
 
     try {
-      const sessionMatch = cookie.match(/sid=([^;]+)/);
+      const sessionMatch = cookie.match(/connect\.sid=([^;]+)/);
       if (!sessionMatch) {
-        console.log('WebSocket connection rejected: No session ID found in cookie');
         ws.close();
         return;
       }
@@ -40,13 +38,11 @@ export function setupWebSocket(server: Server) {
       const session = await storage.getSession(sessionId);
 
       if (!session?.passport?.user) {
-        console.log('WebSocket connection rejected: No authenticated user found in session');
         ws.close();
         return;
       }
 
       ws.userId = session.passport.user;
-      console.log(`WebSocket connection established for user ${ws.userId}`);
 
       ws.on('message', async (message: string) => {
         try {
@@ -67,12 +63,6 @@ export function setupWebSocket(server: Server) {
           }
         } catch (error) {
           console.error('Error processing message:', error);
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({
-              type: 'error',
-              content: 'Failed to process message',
-            }));
-          }
         }
       });
 
@@ -85,19 +75,6 @@ export function setupWebSocket(server: Server) {
       console.error('WebSocket connection error:', error);
       ws.close();
     }
-  });
-
-  // Heartbeat to keep connections alive
-  const interval = setInterval(() => {
-    wss.clients.forEach((ws: WebSocket) => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.ping();
-      }
-    });
-  }, 30000);
-
-  wss.on('close', () => {
-    clearInterval(interval);
   });
 }
 
