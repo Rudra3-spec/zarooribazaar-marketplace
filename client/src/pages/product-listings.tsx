@@ -2,11 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import ProductCard from "@/components/product-card";
 import { Product } from "@shared/schema";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import { getProductRecommendations } from "@/lib/ai-recommendations";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ProductListings() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [recommendations, setRecommendations] = useState<Product[]>([]);
 
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
@@ -16,6 +20,35 @@ export default function ProductListings() {
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Update search history when user searches
+  useEffect(() => {
+    if (searchTerm.trim() && !searchHistory.includes(searchTerm)) {
+      const updatedHistory = [...searchHistory, searchTerm].slice(-5); // Keep last 5 searches
+      setSearchHistory(updatedHistory);
+    }
+  }, [searchTerm]);
+
+  // Get AI recommendations when search history changes
+  useEffect(() => {
+    async function updateRecommendations() {
+      if (products && searchHistory.length > 0) {
+        const recommendedProducts = await getProductRecommendations(searchHistory, products);
+        setRecommendations(recommendedProducts);
+      }
+    }
+    updateRecommendations();
+  }, [searchHistory, products]);
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
@@ -35,6 +68,21 @@ export default function ProductListings() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+
+      {recommendations.length > 0 && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Recommended for You</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {recommendations.map((product) => (
+                <ProductCard key={`rec-${product.id}`} product={product} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {filteredProducts?.map((product) => (
