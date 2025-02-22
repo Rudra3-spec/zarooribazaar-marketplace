@@ -14,16 +14,13 @@ export async function apiRequest(
 ): Promise<Response> {
   const res = await fetch(url, {
     method,
-    headers: {
-      ...(data ? { "Content-Type": "application/json" } : {}),
-      // Add accept header for JSON responses
-      "Accept": "application/json",
-    },
+    headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include", // Always include credentials
+    credentials: "include",
   });
 
-  return res; // Don't throw here, let the caller handle errors
+  await throwIfResNotOk(res);
+  return res;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -33,10 +30,7 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const res = await fetch(queryKey[0] as string, {
-      credentials: "include", // Always include credentials
-      headers: {
-        "Accept": "application/json",
-      },
+      credentials: "include",
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
@@ -55,17 +49,9 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: Infinity,
       retry: false,
-      // Add error handling
-      onError: (error) => {
-        console.error("Query error:", error);
-      },
     },
     mutations: {
       retry: false,
-      // Add error handling
-      onError: (error) => {
-        console.error("Mutation error:", error);
-      },
     },
   },
 });
