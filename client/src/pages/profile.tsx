@@ -392,11 +392,13 @@ export default function Profile() {
                         <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
                           <DialogTrigger asChild>
                             <Button
-                              className="w-full h-24 flex flex-col items-center justify-center gap-2"
+                              className="w-full h-24 flex flex-col items-center justify-center"
                               variant="outline"
                             >
-                              <Package className="h-6 w-6" />
-                              <span className="text-sm text-center">Add Product</span>
+                              <Package className="h-6 w-6 mb-2" />
+                              <span className="text-sm text-center">
+                                Add<br />Product
+                              </span>
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
@@ -497,33 +499,39 @@ export default function Profile() {
                       <div>
                         <Link href="/marketing">
                           <Button
-                            className="w-full h-24 flex flex-col items-center justify-center gap-2"
+                            className="w-full h-24 flex flex-col items-center justify-center"
                             variant="outline"
                           >
-                            <Megaphone className="h-6 w-6" />
-                            <span className="text-sm text-center">Create<br/>Promotion</span>
+                            <Megaphone className="h-6 w-6 mb-2" />
+                            <span className="text-sm text-center">
+                              Create<br />Promotion
+                            </span>
                           </Button>
                         </Link>
                       </div>
                       <div>
                         <Link href="/bulk-orders">
                           <Button
-                            className="w-full h-24 flex flex-col items-center justify-center gap-2"
+                            className="w-full h-24 flex flex-col items-center justify-center"
                             variant="outline"
                           >
-                            <ShoppingBag className="h-6 w-6" />
-                            <span className="text-sm text-center">Bulk<br/>Orders</span>
+                            <ShoppingBag className="h-6 w-6 mb-2" />
+                            <span className="text-sm text-center">
+                              Bulk<br />Orders
+                            </span>
                           </Button>
                         </Link>
                       </div>
                       <div>
                         <Link href="/insights">
                           <Button
-                            className="w-full h-24 flex flex-col items-center justify-center gap-2"
+                            className="w-full h-24 flex flex-col items-center justify-center"
                             variant="outline"
                           >
-                            <BarChart className="h-6 w-6" />
-                            <span className="text-sm text-center">View<br/>Insights</span>
+                            <BarChart className="h-6 w-6 mb-2" />
+                            <span className="text-sm text-center">
+                              View<br />Insights
+                            </span>
                           </Button>
                         </Link>
                       </div>
