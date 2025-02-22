@@ -22,45 +22,66 @@ export function BusinessBackground({
       {/* Grid pattern */}
       <div
         className={cn(
-          "absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(0deg,transparent,black)]",
-          variant === "dark" && "bg-grid-slate-800/50"
+          "absolute inset-0 [mask-image:linear-gradient(0deg,transparent,black)]",
+          variant === "dark" 
+            ? "bg-[linear-gradient(to_right,transparent_0.5px,theme(colors.slate.950)_0.5px),linear-gradient(to_bottom,transparent_0.5px,theme(colors.slate.950)_0.5px)] bg-[size:24px_24px]" 
+            : "bg-[linear-gradient(to_right,transparent_0.5px,theme(colors.gray.50)_0.5px),linear-gradient(to_bottom,transparent_0.5px,theme(colors.gray.50)_0.5px)] bg-[size:24px_24px]"
         )}
-      />
-      
-      {/* Gradient orbs */}
-      <div
-        className="absolute left-[--left] top-[--top] -z-10 h-[600px] w-[600px] rounded-full opacity-40 blur-3xl"
         style={{
-          background:
-            "conic-gradient(from 180deg at 50% 50%, #2563EB 0deg, #3B82F6 180deg, #60A5FA 360deg)",
-          "--left": "calc(50% - 300px)",
-          "--top": "calc(50% - 300px)",
-        } as React.CSSProperties}
+          backgroundImage: variant === "dark"
+            ? "linear-gradient(to right, rgba(255,255,255,0.05) 0.5px, transparent 0.5px), linear-gradient(to bottom, rgba(255,255,255,0.05) 0.5px, transparent 0.5px)"
+            : "linear-gradient(to right, rgba(0,0,0,0.05) 0.5px, transparent 0.5px), linear-gradient(to bottom, rgba(0,0,0,0.05) 0.5px, transparent 0.5px)"
+        }}
       />
-      
-      {/* Abstract shapes */}
+
+      {/* Professional Gradient Effect */}
+      <div className="absolute -z-10 h-full w-full">
+        <div
+          className="absolute left-[--left] top-[--top] h-[500px] w-[500px] rounded-full opacity-20 blur-3xl"
+          style={{
+            background: variant === "dark"
+              ? "radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.1), rgba(59, 130, 246, 0.2))"
+              : "radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.1), rgba(59, 130, 246, 0.15))",
+            "--left": "calc(20% - 250px)",
+            "--top": "calc(50% - 250px)",
+          } as React.CSSProperties}
+        />
+        <div
+          className="absolute right-[--right] bottom-[--bottom] h-[400px] w-[400px] rounded-full opacity-20 blur-3xl"
+          style={{
+            background: variant === "dark"
+              ? "radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.1), rgba(37, 99, 235, 0.2))"
+              : "radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.1), rgba(37, 99, 235, 0.15))",
+            "--right": "calc(30% - 200px)",
+            "--bottom": "calc(30% - 200px)",
+          } as React.CSSProperties}
+        />
+      </div>
+
+      {/* Business-themed Decorative Elements */}
       <svg
         className={cn(
-          "absolute right-0 top-0 -z-10 h-[500px] w-[500px] stroke-slate-200",
-          variant === "dark" && "stroke-slate-800"
+          "absolute right-0 top-0 -z-10 h-[600px] w-[600px]",
+          variant === "dark" ? "stroke-slate-800/20" : "stroke-slate-200/50"
         )}
         aria-hidden="true"
       >
         <defs>
           <pattern
             id="business-pattern"
-            width="40"
-            height="40"
+            width="48"
+            height="48"
             patternUnits="userSpaceOnUse"
           >
-            <path d="M.5 40V.5H40" fill="none" />
+            <path d="M.5 48V.5H48" fill="none" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" strokeWidth="0" fill="url(#business-pattern)" />
-        <circle cx="400" cy="100" r="50" strokeWidth="2" fill="none" />
+        <circle cx="400" cy="100" r="64" strokeWidth="2" fill="none" />
         <path
-          d="M400 100l-50-50M400 100l50-50M400 100l-50 50M400 100l50 50"
+          d="M400 36v128M336 100h128"
           strokeWidth="2"
+          strokeLinecap="round"
           fill="none"
         />
       </svg>
