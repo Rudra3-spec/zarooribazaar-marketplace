@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
 import { Button } from "./button";
 import {
   NavigationMenu,
@@ -8,10 +9,11 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { UserCircle } from "lucide-react";
+import { UserCircle, ShoppingCart } from "lucide-react";
 
 export default function Navigation() {
   const { user, logoutMutation } = useAuth();
+  const { totalItems } = useCart();
   const [location] = useLocation();
 
   if (!user || location === "/auth") return null;
@@ -67,6 +69,12 @@ export default function Navigation() {
         </NavigationMenu>
 
         <div className="flex items-center gap-4">
+          <Link href="/cart">
+            <Button variant="outline" className="flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5" />
+              Cart {totalItems > 0 && `(${totalItems})`}
+            </Button>
+          </Link>
           <Link href="/profile">
             <Button variant="outline" className="flex items-center gap-2">
               <UserCircle className="h-5 w-5" />
