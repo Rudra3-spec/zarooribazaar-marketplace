@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { CityCombobox } from "@/components/city-combobox";
 
 // Product schema from shared schema, extend for form validation
 const productFormSchema = insertProductSchema.extend({
@@ -360,7 +361,10 @@ export default function Profile() {
                             <FormItem>
                               <FormLabel>Location</FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="Enter product location" />
+                                <CityCombobox
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
