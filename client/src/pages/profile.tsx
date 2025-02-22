@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Mail, Phone, Camera } from "lucide-react";
+import { Building2, Mail, Phone, Camera, Package, ShoppingBag, Users, MessageSquare } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -134,10 +134,25 @@ export default function Profile() {
     <div className="container py-8">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={form.watch("avatarUrl")} alt={user?.businessName} />
-            <AvatarFallback>{user?.businessName?.[0]}</AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-24 w-24">
+              <AvatarImage src={form.watch("avatarUrl")} alt={user?.businessName} />
+              <AvatarFallback>{user?.businessName?.[0]}</AvatarFallback>
+            </Avatar>
+            <label
+              htmlFor="avatar-upload"
+              className="absolute bottom-0 right-0 p-2 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+            >
+              <Camera className="h-4 w-4 text-white" />
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </label>
+          </div>
           <div>
             <h1 className="text-3xl font-bold">{user?.businessName}</h1>
             <p className="text-muted-foreground">{user?.type}</p>
@@ -170,6 +185,18 @@ export default function Profile() {
                     <h4 className="font-medium mb-1">Description</h4>
                     <p className="text-muted-foreground">{user?.description}</p>
                   </div>
+                  {user?.gstNumber && (
+                    <div>
+                      <h4 className="font-medium mb-1">GST Number</h4>
+                      <p className="text-muted-foreground">{user.gstNumber}</p>
+                    </div>
+                  )}
+                  {user?.creditScore && (
+                    <div>
+                      <h4 className="font-medium mb-1">Credit Score</h4>
+                      <p className="text-muted-foreground">{user.creditScore}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -183,19 +210,19 @@ export default function Profile() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{user?.contactInfo.email}</span>
+                    <span>{user?.contactInfo?.email}</span>
                   </div>
-                  {user?.contactInfo.phone && (
+                  {user?.contactInfo?.phone && (
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{user?.contactInfo.phone}</span>
+                      <span>{user?.contactInfo?.phone}</span>
                     </div>
                   )}
-                  {user?.contactInfo.address && (
+                  {user?.contactInfo?.address && (
                     <div>
                       <h4 className="font-medium mb-1">Address</h4>
                       <p className="text-muted-foreground">
-                        {user?.contactInfo.address}
+                        {user?.contactInfo?.address}
                       </p>
                     </div>
                   )}
@@ -218,6 +245,11 @@ export default function Profile() {
                 {products?.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
+                {!products?.length && (
+                  <div className="col-span-3 text-center py-8 text-muted-foreground">
+                    No products added yet
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>
@@ -315,25 +347,7 @@ export default function Profile() {
                         </FormItem>
                       )}
                     />
-                    <div className="relative">
-                      <Avatar className="h-20 w-20">
-                        <AvatarImage src={form.watch("avatarUrl")} alt={user?.businessName} />
-                        <AvatarFallback>{user?.businessName?.[0]}</AvatarFallback>
-                      </Avatar>
-                      <label
-                        htmlFor="avatar-upload"
-                        className="absolute bottom-0 right-0 p-1 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
-                      >
-                        <Camera className="h-4 w-4 text-white" />
-                        <input
-                          id="avatar-upload"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleFileUpload}
-                        />
-                      </label>
-                    </div>
+
                     <Button
                       type="submit"
                       className="w-full"

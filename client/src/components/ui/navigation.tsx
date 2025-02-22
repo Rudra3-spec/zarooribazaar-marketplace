@@ -8,6 +8,7 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { UserCircle } from "lucide-react";
 
 export default function Navigation() {
   const { user, logoutMutation } = useAuth();
@@ -18,6 +19,15 @@ export default function Navigation() {
   return (
     <div className="border-b">
       <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/profile">
+            <Button variant="ghost" className="flex items-center gap-2">
+              <UserCircle className="h-5 w-5" />
+              {user.businessName || 'My Profile'}
+            </Button>
+          </Link>
+        </div>
+
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -59,48 +69,6 @@ export default function Navigation() {
               <Link href="/financing">
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Financing
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/gst-services">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  GST Services
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/marketing">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Marketing
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/logistics">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Logistics
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/learning">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Learning
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/chat">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Chat
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/profile">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Profile
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
