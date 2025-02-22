@@ -192,9 +192,12 @@ export default function CommunityPage() {
             <div className="space-x-2">
               <Dialog open={activeDialog === 'post'} onOpenChange={(open) => setActiveDialog(open ? 'post' : null)}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => setActiveDialog('post')}>New Post</Button>
+                  <Button variant="default" className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    New Post
+                  </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[500px]">
                   <DialogHeader>
                     <DialogTitle>Create Forum Post</DialogTitle>
                   </DialogHeader>
@@ -253,9 +256,12 @@ export default function CommunityPage() {
 
               <Dialog open={activeDialog === 'webinar'} onOpenChange={(open) => setActiveDialog(open ? 'webinar' : null)}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => setActiveDialog('webinar')}>Host Webinar</Button>
+                  <Button variant="default" className="flex items-center gap-2">
+                    <Video className="h-4 w-4" />
+                    Host Webinar
+                  </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[500px]">
                   <DialogHeader>
                     <DialogTitle>Create Webinar</DialogTitle>
                   </DialogHeader>
