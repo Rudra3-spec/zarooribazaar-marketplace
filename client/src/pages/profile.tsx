@@ -20,8 +20,15 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Product } from "@shared/schema";
+import { Product, insertProductSchema } from "@shared/schema";
 import ProductCard from "@/components/product-card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const profileSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
@@ -36,6 +43,15 @@ const profileSchema = z.object({
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
+
+// Product schema from shared schema, extend for form validation
+const productFormSchema = insertProductSchema.extend({
+  name: z.string().min(1, "Product name is required"),
+  price: z.number().min(0, "Price must be positive"),
+  category: z.string().min(1, "Category is required"),
+});
+
+type ProductFormData = z.infer<typeof productFormSchema>;
 
 export default function Profile() {
   const { user } = useAuth();
@@ -53,6 +69,16 @@ export default function Profile() {
         address: user?.contactInfo?.address || "",
       },
       avatarUrl: user?.avatarUrl || "",
+    },
+  });
+
+  const productForm = useForm<ProductFormData>({
+    resolver: zodResolver(productFormSchema),
+    defaultValues: {
+      name: "",
+      price: 0,
+      category: "",
+      description: "",
     },
   });
 
@@ -93,8 +119,47 @@ export default function Profile() {
     },
   });
 
+  const addProductMutation = useMutation({
+    mutationFn: async (data: ProductFormData) => {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...data, userId: user?.id }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to add product");
+      }
+
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product added successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/products/user", user?.id] });
+      productForm.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = async (data: ProfileFormData) => {
     await updateProfileMutation.mutateAsync(data);
+  };
+
+  const onAddProduct = async (data: ProductFormData) => {
+    await addProductMutation.mutateAsync(data);
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,10 +306,90 @@ export default function Profile() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-semibold">Your Products</h2>
-                <Button>
-                  <Package className="mr-2 h-4 w-4" />
-                  Add Product
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Package className="mr-2 h-4 w-4" />
+                      Add Product
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Product</DialogTitle>
+                    </DialogHeader>
+                    <Form {...productForm}>
+                      <form onSubmit={productForm.handleSubmit(onAddProduct)} className="space-y-4">
+                        <FormField
+                          control={productForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Product Name</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={productForm.control}
+                          name="price"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Price</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={productForm.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Category</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={productForm.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <Button
+                          type="submit"
+                          className="w-full"
+                          disabled={addProductMutation.isPending}
+                        >
+                          {addProductMutation.isPending ? "Adding..." : "Add Product"}
+                        </Button>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               <div className="grid md:grid-cols-3 gap-6">

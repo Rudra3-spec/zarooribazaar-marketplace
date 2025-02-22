@@ -1,0 +1,90 @@
+Alright! For the "Add Product" button showing no response, follow these steps:
+
+✅ Frontend Fix (React)
+Locate the Button:
+In client/src/pages/profile.tsx or product-listings.tsx, check the button code:
+tsx
+Copy
+Edit
+<button 
+    onClick={handleAddProduct} 
+    className="btn btn-primary">
+    Add Product
+</button>
+Define handleAddProduct Function:
+Ensure the function sends a request with JSON content:
+tsx
+Copy
+Edit
+const handleAddProduct = async () => {
+    try {
+        const productData = {
+            name: productName,       // Replace with state variables
+            price: productPrice,
+            category: productCategory,
+        };
+        
+        const response = await fetch("http://localhost:5000/api/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(productData),
+        });
+
+        const data = await response.json();
+        if (response.ok) alert("Product added successfully");
+        else alert(`Error: ${data.error}`);
+    } catch (error) {
+        console.error("Add Product Error:", error);
+    }
+};
+Bind Input Fields to State:
+Make sure input fields are controlled components:
+tsx
+Copy
+Edit
+<input 
+    type="text" 
+    value={productName} 
+    onChange={(e) => setProductName(e.target.value)} 
+    placeholder="Product Name" 
+/>
+<input 
+    type="number" 
+    value={productPrice} 
+    onChange={(e) => setProductPrice(Number(e.target.value))} 
+    placeholder="Price" 
+/>
+<input 
+    type="text" 
+    value={productCategory} 
+    onChange={(e) => setProductCategory(e.target.value)} 
+    placeholder="Category" 
+/>
+✅ Backend Fix (Node.js)
+In server/index.ts, verify the /api/products route:
+
+ts
+Copy
+Edit
+app.post("/api/products", async (req, res) => {
+    try {
+        const { name, price, category } = req.body;
+
+        if (!name || !price || !category) 
+            return res.status(400).json({ error: "All fields are required" });
+
+        const newProduct = {
+            id: Date.now(),  // Temporary (Replace with DB logic)
+            name,
+            price,
+            category
+        };
+
+        res.status(201).json(newProduct);
+    } catch (error) {
+        console.error("Add Product Error:", error);
+        res.status(500).json({ error: "Failed to add product" });
+    }
+});
+✅ Test the API
+Use Postman or cURL to ensure the backend works correctly:
