@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -38,7 +39,7 @@ export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       businessName: user?.businessName || "",
@@ -131,9 +132,21 @@ export default function Profile() {
     }
   };
 
-  const { data: products } = useQuery<Product[]>({
+  const { data: products, isLoading: isLoadingProducts } = useQuery<Product[]>({
     queryKey: ["/api/products/user", user?.id],
   });
+
+  if (!user) {
+    return (
+      <div className="container py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center text-muted-foreground">
+            Loading profile...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
@@ -141,8 +154,8 @@ export default function Profile() {
         <div className="flex items-center gap-4 mb-8">
           <div className="relative">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={form.watch("avatarUrl")} alt={user?.businessName} />
-              <AvatarFallback>{user?.businessName?.[0]}</AvatarFallback>
+              <AvatarImage src={form.watch("avatarUrl")} alt={user.businessName} />
+              <AvatarFallback>{user.businessName?.[0]}</AvatarFallback>
             </Avatar>
             <label
               htmlFor="avatar-upload"
@@ -159,8 +172,8 @@ export default function Profile() {
             </label>
           </div>
           <div>
-            <h1 className="text-3xl font-bold">{user?.businessName}</h1>
-            <p className="text-muted-foreground">{user?.type}</p>
+            <h1 className="text-3xl font-bold">{user.businessName}</h1>
+            <p className="text-muted-foreground">{user.type}</p>
           </div>
         </div>
 
@@ -183,11 +196,11 @@ export default function Profile() {
                 <CardContent className="space-y-4">
                   <div>
                     <h4 className="font-medium mb-1">Business Type</h4>
-                    <p className="text-muted-foreground">{user?.type}</p>
+                    <p className="text-muted-foreground">{user.type}</p>
                   </div>
                   <div>
                     <h4 className="font-medium mb-1">Description</h4>
-                    <p className="text-muted-foreground">{user?.description}</p>
+                    <p className="text-muted-foreground">{user.description}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -202,19 +215,19 @@ export default function Profile() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{user?.contactInfo?.email}</span>
+                    <span>{user.contactInfo?.email}</span>
                   </div>
-                  {user?.contactInfo?.phone && (
+                  {user.contactInfo?.phone && (
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{user?.contactInfo?.phone}</span>
+                      <span>{user.contactInfo.phone}</span>
                     </div>
                   )}
-                  {user?.contactInfo?.address && (
+                  {user.contactInfo?.address && (
                     <div>
                       <h4 className="font-medium mb-1">Address</h4>
                       <p className="text-muted-foreground">
-                        {user?.contactInfo?.address}
+                        {user.contactInfo.address}
                       </p>
                     </div>
                   )}
@@ -233,16 +246,22 @@ export default function Profile() {
                 </Button>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-6">
-                {products?.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-                {!products?.length && (
-                  <div className="col-span-3 text-center py-8 text-muted-foreground">
-                    No products added yet
-                  </div>
-                )}
-              </div>
+              {isLoadingProducts ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-3 gap-6">
+                  {products?.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                  {!products?.length && (
+                    <div className="col-span-3 text-center py-8 text-muted-foreground">
+                      No products added yet
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </TabsContent>
 
