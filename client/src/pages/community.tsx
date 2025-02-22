@@ -23,16 +23,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { z } from "zod";
 
+// Extend the schema to include optional fields with proper validation
 const extendedForumPostSchema = insertForumPostSchema.extend({
-  tags: z.array(z.string()).optional(),
-  views: z.number().optional(),
+  tags: z.array(z.string()).optional().default([]),
+  views: z.number().optional().default(0),
 });
 
 const extendedWebinarSchema = insertWebinarSchema.extend({
-  status: z.string().optional(),
+  status: z.enum(["upcoming", "ongoing", "completed"]).optional().default("upcoming"),
   maxParticipants: z.number().min(5, "Minimum 5 participants required").max(500, "Maximum 500 participants allowed"),
   registrationDeadline: z.string().min(1, "Registration deadline is required"),
 });
+
+type ForumPostFormData = z.infer<typeof extendedForumPostSchema>;
+type WebinarFormData = z.infer<typeof extendedWebinarSchema>;
 
 export default function CommunityPage() {
   const { user } = useAuth();
@@ -47,49 +51,45 @@ export default function CommunityPage() {
     queryKey: ["/api/webinars"],
   });
 
-  const forumPostForm = useForm({
+  const forumPostForm = useForm<ForumPostFormData>({
     resolver: zodResolver(extendedForumPostSchema),
     defaultValues: {
       title: "",
       content: "",
       category: "",
       tags: [],
+      views: 0,
     },
   });
 
-  const webinarForm = useForm({
+  const webinarForm = useForm<WebinarFormData>({
     resolver: zodResolver(extendedWebinarSchema),
     defaultValues: {
       title: "",
       description: "",
-      scheduledAt: "",
+      scheduledAt: new Date().toISOString().slice(0, 16),
       duration: 60,
       maxParticipants: 100,
-      registrationDeadline: "",
+      registrationDeadline: new Date().toISOString().slice(0, 16),
+      status: "upcoming",
     },
   });
 
   const createForumPostMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof extendedForumPostSchema>) => {
-      try {
-        const postData = {
-          ...data,
-          userId: user?.id,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          views: 0,
-        };
+    mutationFn: async (data: ForumPostFormData) => {
+      const response = await apiRequest("POST", "/api/forum-posts", {
+        ...data,
+        userId: user?.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
 
-        const response = await apiRequest("POST", "/api/forum-posts", postData);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to create post');
-        }
-        return response.json();
-      } catch (error) {
-        console.error('Forum post creation error:', error);
-        throw error;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create post');
       }
+
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -103,33 +103,27 @@ export default function CommunityPage() {
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create post",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
   const createWebinarMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof extendedWebinarSchema>) => {
-      try {
-        const webinarData = {
-          ...data,
-          hostId: user?.id,
-          status: 'upcoming',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
+    mutationFn: async (data: WebinarFormData) => {
+      const response = await apiRequest("POST", "/api/webinars", {
+        ...data,
+        hostId: user?.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
 
-        const response = await apiRequest("POST", "/api/webinars", webinarData);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to create webinar');
-        }
-        return response.json();
-      } catch (error) {
-        console.error('Webinar creation error:', error);
-        throw error;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create webinar');
       }
+
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -143,13 +137,13 @@ export default function CommunityPage() {
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create webinar",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  const handleForumPostSubmit = async (data: z.infer<typeof extendedForumPostSchema>) => {
+  const handleForumPostSubmit = async (data: ForumPostFormData) => {
     if (!user) {
       toast({
         title: "Error",
@@ -158,14 +152,10 @@ export default function CommunityPage() {
       });
       return;
     }
-    try {
-      await createForumPostMutation.mutateAsync(data);
-    } catch (error) {
-      console.error('Forum post submission error:', error);
-    }
+    await createForumPostMutation.mutateAsync(data);
   };
 
-  const handleWebinarSubmit = async (data: z.infer<typeof extendedWebinarSchema>) => {
+  const handleWebinarSubmit = async (data: WebinarFormData) => {
     if (!user) {
       toast({
         title: "Error",
@@ -174,11 +164,7 @@ export default function CommunityPage() {
       });
       return;
     }
-    try {
-      await createWebinarMutation.mutateAsync(data);
-    } catch (error) {
-      console.error('Webinar submission error:', error);
-    }
+    await createWebinarMutation.mutateAsync(data);
   };
 
   return (
