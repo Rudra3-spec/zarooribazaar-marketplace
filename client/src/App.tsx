@@ -16,6 +16,7 @@ import Logistics from "@/pages/logistics";
 import Learning from "@/pages/learning";
 import BulkOrders from "@/pages/bulk-orders";
 import Community from "@/pages/community";
+import Insights from "@/pages/insights";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navigation from "./components/ui/navigation";
 
@@ -33,6 +34,7 @@ function Router() {
       <ProtectedRoute path="/learning" component={Learning} />
       <ProtectedRoute path="/bulk-orders" component={BulkOrders} />
       <ProtectedRoute path="/community" component={Community} />
+      <ProtectedRoute path="/insights" component={Insights} />
       <ProtectedRoute path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>
