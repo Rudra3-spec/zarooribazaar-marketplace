@@ -21,6 +21,7 @@ import Insights from "@/pages/insights";
 import Cart from "@/pages/cart";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navigation from "./components/ui/navigation";
+import { BusinessBackground } from "./components/ui/business-background";
 
 function Router() {
   return (
@@ -49,9 +50,14 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <Navigation />
-          <Router />
-          <Toaster />
+          <div className="relative min-h-screen">
+            <BusinessBackground variant="light" />
+            <div className="relative z-10">
+              <Navigation />
+              <Router />
+            </div>
+            <Toaster />
+          </div>
         </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
