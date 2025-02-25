@@ -58,7 +58,7 @@ const profileSchema = z.object({
     facebook: z.string().optional(),
     twitter: z.string().optional(),
     linkedin: z.string().optional(),
-  }),
+  }).optional(),
   avatar: z.string().optional(),
 });
 
