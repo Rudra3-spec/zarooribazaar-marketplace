@@ -259,7 +259,7 @@ export const insertProductSchema = createInsertSchema(products).extend({
 });
 export const insertMessageSchema = createInsertSchema(messages);
 export const insertLoanApplicationSchema = createInsertSchema(loanApplications);
-export const insertGstRegistrationSchema = createInsertSchema(gstRegistrations);
+// Schema is defined below with additional fields
 export const insertPromotionSchema = createInsertSchema(promotions);
 export const insertLogisticsSchema = createInsertSchema(logistics);
 export const insertLearningResourceSchema = createInsertSchema(learningResources);
