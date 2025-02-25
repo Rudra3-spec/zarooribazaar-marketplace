@@ -237,10 +237,14 @@ export const users = pgTable("users", {
 });
 
 export const insertUserSchema = createInsertSchema(users).extend({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  username: z.string().min(1, "Username is required*"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters*")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter*")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter*")
+    .regex(/[0-9]/, "Password must contain at least one number*"),
   contactInfo: z.object({
-    email: z.string().email("Invalid email").min(1, "Email is required"),
+    email: z.string().email("Invalid email format*").min(1, "Email is required*"),
     phone: z.string().optional(),
     address: z.string().optional(),
   }),

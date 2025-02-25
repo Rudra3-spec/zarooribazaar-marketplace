@@ -76,7 +76,7 @@ export default function AuthPage() {
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-200">Username</FormLabel>
+                        <FormLabel className="text-gray-200">Username *</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
@@ -92,7 +92,7 @@ export default function AuthPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-200">Password</FormLabel>
+                        <FormLabel className="text-gray-200">Password *</FormLabel>
                         <FormControl>
                           <Input 
                             type="password" 
@@ -123,7 +123,7 @@ export default function AuthPage() {
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-200">Username</FormLabel>
+                        <FormLabel className="text-gray-200">Username *</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
@@ -139,7 +139,7 @@ export default function AuthPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-200">Password</FormLabel>
+                        <FormLabel className="text-gray-200">Password *</FormLabel>
                         <FormControl>
                           <Input 
                             type="password" 
@@ -189,7 +189,7 @@ export default function AuthPage() {
                     name="contactInfo.email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-200">Email</FormLabel>
+                        <FormLabel className="text-gray-200">Email *</FormLabel>
                         <FormControl>
                           <Input 
                             type="email" 
