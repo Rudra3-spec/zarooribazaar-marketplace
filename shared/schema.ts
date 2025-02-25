@@ -299,3 +299,26 @@ export type ForumPost = typeof forumPosts.$inferSelect;
 export type ForumComment = typeof forumComments.$inferSelect;
 export type Webinar = typeof webinars.$inferSelect;
 export type WebinarRegistration = typeof webinarRegistrations.$inferSelect;
+
+import { z } from "zod";
+
+export const gstComplianceSchema = z.object({
+  type: z.enum(['monthly', 'quarterly', 'annual']),
+  lastFiled: z.string(),
+  nextDue: z.string(),
+  status: z.enum(['pending', 'filed', 'overdue']),
+  returnType: z.enum(['GSTR1', 'GSTR2', 'GSTR3B', 'GSTR9']),
+});
+
+export const insertGstRegistrationSchema = z.object({
+  userId: z.number(),
+  businessType: z.string(),
+  annualTurnover: z.number(),
+  status: z.enum(['pending', 'approved', 'rejected']),
+  documents: z.object({
+    panCard: z.string().optional(),
+    addressProof: z.string().optional(),
+    businessRegistration: z.string().optional(),
+  }).optional(),
+  compliance: gstComplianceSchema.optional()
+});

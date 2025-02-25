@@ -127,6 +127,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(201).json(registration);
   });
 
+  app.get("/api/gst-compliance/:userId", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const compliance = await storage.getGstCompliance(parseInt(req.params.userId));
+    res.json(compliance);
+  });
+
+  app.post("/api/gst-returns", async (req, res) => {
+    if (!req.user) return res.sendStatus(401);
+    const return_filing = await storage.createGstReturn({
+      userId: req.user.id,
+      type: req.body.type,
+      period: req.body.period,
+      data: req.body.data,
+      createdAt: new Date().toISOString(),
+    });
+    res.status(201).json(return_filing);
+  });
+
   // Promotions
   app.get("/api/promotions/:userId", async (req, res) => {
     if (!req.user) return res.sendStatus(401);
