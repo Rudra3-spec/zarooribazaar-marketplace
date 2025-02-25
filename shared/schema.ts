@@ -236,7 +236,15 @@ export const users = pgTable("users", {
   }>(),
 });
 
-export const insertUserSchema = createInsertSchema(users);
+export const insertUserSchema = createInsertSchema(users).extend({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+  contactInfo: z.object({
+    email: z.string().email("Invalid email").min(1, "Email is required"),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+  }),
+});
 export const insertProductSchema = createInsertSchema(products).extend({
   quantity: z.number().min(0, "Quantity must be 0 or greater"),
   tags: z.array(z.string()).optional(),

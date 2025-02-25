@@ -40,6 +40,7 @@ export default function AuthPage() {
         address: "",
       },
     },
+    shouldUseNativeValidation: true,
   });
 
   if (user) {
