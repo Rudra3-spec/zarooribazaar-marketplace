@@ -101,13 +101,6 @@ export default function AuthPage() {
                             className="bg-gray-800/50 border-gray-700 focus:border-primary"
                           />
                         </FormControl>
-                        <FormDescription>
-                          Password must contain at least:
-                          • 8 characters
-                          • One uppercase letter
-                          • One lowercase letter  
-                          • One number
-                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
