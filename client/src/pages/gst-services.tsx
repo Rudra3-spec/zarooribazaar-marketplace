@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GstServicesPage() {
   const { user } = useAuth();
-  
+
   const { data: gstRegistration } = useQuery<GstRegistration>({
     queryKey: ["/api/gst-registration", user?.id],
   });
@@ -36,6 +35,23 @@ export default function GstServicesPage() {
     },
   });
 
+  const onSubmit = async (data) => {
+    // Handle form submission
+    try {
+      const response = await fetch('/api/gst-registration', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Registration failed');
+      // Refresh page or show success message
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   return (
     <div className="container py-8">
       <div className="max-w-5xl mx-auto">
@@ -46,8 +62,8 @@ export default function GstServicesPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="overview">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="registration">Registration</TabsTrigger>
             <TabsTrigger value="compliance">Compliance</TabsTrigger>
@@ -84,7 +100,6 @@ export default function GstServicesPage() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -116,7 +131,7 @@ export default function GstServicesPage() {
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
-                    <form className="space-y-6">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                       <FormField
                         control={form.control}
                         name="businessType"
@@ -180,60 +195,31 @@ export default function GstServicesPage() {
           </TabsContent>
 
           <TabsContent value="compliance">
-            <div className="grid md:grid-cols-2 gap-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Monthly Returns
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-4 border rounded-lg">
-                      <h3 className="font-medium mb-2">GSTR-1 (February 2024)</h3>
-                      <div className="flex items-center gap-2 text-yellow-500">
-                        <AlertCircle className="h-4 w-4" />
-                        <span className="text-sm">Due in 5 days</span>
-                      </div>
-                      <Button className="w-full mt-4">File Return</Button>
+            <Card>
+              <CardHeader>
+                <CardTitle>GST Compliance Calendar</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 p-4 border rounded-lg">
+                    <Calendar className="h-5 w-5" />
+                    <div>
+                      <h3 className="font-medium">Next Filing Due</h3>
+                      <p className="text-sm text-muted-foreground">GSTR-1 for March 2024</p>
                     </div>
-                    <div className="p-4 border rounded-lg">
-                      <h3 className="font-medium mb-2">GSTR-3B (February 2024)</h3>
-                      <div className="flex items-center gap-2 text-yellow-500">
-                        <AlertCircle className="h-4 w-4" />
-                        <span className="text-sm">Due in 14 days</span>
-                      </div>
-                      <Button className="w-full mt-4">File Return</Button>
-                    </div>
+                    <Button className="ml-auto">File Return</Button>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Compliance Calendar</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-4 p-3 bg-muted rounded">
-                      <Calendar className="h-5 w-5" />
-                      <div>
-                        <p className="font-medium">March 11, 2024</p>
-                        <p className="text-sm text-muted-foreground">GSTR-1 Filing Due</p>
-                      </div>
+                  <div className="flex items-center gap-4 p-4 border rounded-lg">
+                    <Calendar className="h-5 w-5" />
+                    <div>
+                      <h3 className="font-medium">Next Filing Due</h3>
+                      <p className="text-sm text-muted-foreground">GSTR-3B for March 2024</p>
                     </div>
-                    <div className="flex items-center gap-4 p-3 bg-muted rounded">
-                      <Calendar className="h-5 w-5" />
-                      <div>
-                        <p className="font-medium">March 20, 2024</p>
-                        <p className="text-sm text-muted-foreground">GSTR-3B Filing Due</p>
-                      </div>
-                    </div>
+                    <Button className="ml-auto">File Return</Button>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
