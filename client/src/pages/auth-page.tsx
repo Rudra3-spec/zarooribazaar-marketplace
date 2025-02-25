@@ -10,6 +10,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -100,6 +101,13 @@ export default function AuthPage() {
                             className="bg-gray-800/50 border-gray-700 focus:border-primary"
                           />
                         </FormControl>
+                        <FormDescription>
+                          Password must contain at least:
+                          • 8 characters
+                          • One uppercase letter
+                          • One lowercase letter  
+                          • One number
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -147,6 +155,13 @@ export default function AuthPage() {
                             className="bg-gray-800/50 border-gray-700 focus:border-primary"
                           />
                         </FormControl>
+                        <FormDescription>
+                          Password must contain at least:
+                          • 8 characters
+                          • One uppercase letter
+                          • One lowercase letter  
+                          • One number
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
