@@ -65,6 +65,13 @@ export default function Navigation() {
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href="/gst-services">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  GST Services
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
 
